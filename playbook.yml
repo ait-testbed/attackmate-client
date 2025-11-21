@@ -1,0 +1,3 @@
+commands:
+  - type: shell
+    cmd: whoami
