@@ -1,6 +1,6 @@
 # AttackMate Playbook CLI Client
 
-This is a focused command-line client for interacting with the AttackMate API server, specifically designed for remotely executing playbooks and checking instance state.
+This is a command-line client for interacting with the AttackMate API serverfor remotely executing playbooks.
 
 ## Installation
 
@@ -29,13 +29,13 @@ Common Options
 | --username   | API username for authentication. (Required)        |
 | --password      | API password for authentication. (Required)       |
 | --cacert | Path to the server's CA certificate file if using self-signed SSL.        |
-| --debug     | (Playbook modes only) Enable server debug logging for the playbook instance.      |
+| --debug     | Enable server debug logging for the playbook instance.      |
 
 
-# Example: Execute a Playbook by Sending Local YAML Content
+# Example: Execute a Playbook
 
 This command reads the YAML content from a local file and sends the full content directly to the AttackMate server's /playbooks/execute/yaml endpoint for immediate execution.
 
 ```bash
-attackmate-client playbook-yaml /path/to/my_local_scenario.yaml --username <user> --password <pass>
+attackmate-client  /path/to/my_local_playbook.yaml --username <user> --password <pass> --cacert /path/to/cert
 ```
