@@ -8,7 +8,6 @@ from typing import Dict, Any, Optional, List
 import httpx
 import yaml
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - CLIENT - %(levelname)s - %(message)s')
 logger = logging.getLogger('playbook')
 
 # Global cache for active sessions (token storage)
@@ -71,7 +70,7 @@ class RemoteAttackMateClient:
             token = data.get('access_token')
 
             if token:
-                # Store the token globally (simulating a session lock)
+                # Store the token globally  
                 _active_sessions[self.server_url] = {
                     'token': token,
                     'user': username
@@ -112,9 +111,7 @@ class RemoteAttackMateClient:
         try:
             with httpx.Client(verify=self.verify_ssl, timeout=self.timeout_config) as client:
 
-
                 response = client.post(url, content=content_data, headers=headers, params=params)
-
 
             response.raise_for_status()
             response_data = response.json()
@@ -134,7 +131,7 @@ class RemoteAttackMateClient:
             except json.JSONDecodeError:
                 logger.error(f"Server Response Text: {e.response.text}")
 
-            if e.response.status_code == 401:  # Unauthorized
+            if e.response.status_code == 401:  
                 logger.warning(f"Token expired or invalid for {self.server_url}. Clearing session cache.")
                 _active_sessions.pop(self.server_url, None)
             return None
@@ -159,9 +156,30 @@ class RemoteAttackMateClient:
             params={'debug': 'true'} if debug else None # Pass as string for query params
         )
 
+    def execute_remote_command(
+        self,
+        command_pydantic_model,
+        debug: bool = False
+    ) -> Optional[Dict[str, Any]]:
+        # get the correct enpoint
+        endpoint = 'command/execute'
+
+        # Convert Pydantic model to dict for JSON body
+        # handle None values for optional fields (exclude_none=True)
+        command_body_dict = command_pydantic_model.model_dump(exclude_none=True)
+        request_payload = {
+            'command': command_body_dict
+        }
+
+        return self._make_request(
+            method='POST',
+            endpoint=endpoint,
+            json_data=request_payload,
+            params={'debug': True} if debug else None
+        )
+
 
 def print_result(result_data: Optional[Dict[str, Any]], action: str):
-    """Helper to format and print the playbook execution results."""
     if not result_data:
         logger.error(f"{action} failed. See logs above for details.")
         sys.exit(1)
@@ -188,8 +206,8 @@ def main():
         help='Path to the local playbook YAML file to execute.'
     )
 
-    parser.add_argument('--server-url', default='https://localhost:8443',
-                             help='Base URL of the AttackMate API server (default: https://localhost:8443)')
+    parser.add_argument('--server-url', default='https://localhost:8445',
+                             help='Base URL of the AttackMate API server (default: https://localhost:8445)')
     parser.add_argument('--username', required=True, help='API username for authentication.')
     parser.add_argument('--password', required=True, help='API password for authentication.')
     parser.add_argument('--cacert', help='Path to the server\'s self-signed certificate file for verification.')
