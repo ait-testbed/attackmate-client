@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 import json
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 
 import httpx
 import yaml
@@ -30,19 +30,26 @@ class RemoteAttackMateClient:
         self.server_url = server_url.rstrip('/')
         self.username = username
         self.password = password
+
+        self.timeout_config, self.verify_ssl = self._configure_http_settings(cacert, timeout)
         
-        # Configure timeout for requests
-        self.timeout_config = httpx.Timeout(10.0, connect=5.0, read=timeout)
+        logger.debug(f"RemoteClient initialized for {self.server_url}")
+
+
+    def _configure_http_settings(self, cacert: Optional[str], timeout: float) -> Tuple[httpx.Timeout, Any]:
+        """Configures SSL verification and request timeout."""
+        timeout_config = httpx.Timeout(10.0, connect=5.0, read=timeout)
         
-        # Configure SSL verification
-        self.verify_ssl: Any = True # Default to system CAs
+        verify_ssl: Any = True # Default to system CAs
         if cacert:
             if os.path.exists(cacert):
-                self.verify_ssl = cacert
+                verify_ssl = cacert
                 logger.info(f"Client will verify {self.server_url} SSL using CA: {cacert}")
             else:
                 logger.error(f"CA certificate file not found: {cacert}. Falling back to default verification.")
-        logger.debug(f"RemoteClient initialized for {self.server_url}")
+        
+        return timeout_config, verify_ssl
+
 
     def _get_session_token(self) -> Optional[str]:
         """Retrieves a valid token for the server_url from memory, logs in if necessary."""
@@ -87,31 +94,62 @@ class RemoteAttackMateClient:
             logger.error(f"Login request to {self.server_url} failed: {e}", exc_info=True)
             return None
 
+    def _prepare_request_kwargs(
+        self,
+        token: str,
+        json_data: Optional[Dict[str, Any]] = None,
+        content_data: Optional[str] = None,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Prepares headers and payload arguments for httpx.request."""
+        
+        headers = {'X-Auth-Token': token}
+        request_kwargs = {
+            'headers': headers,
+            'params': params,
+        }
+
+        if json_data is not None:
+            request_kwargs['json'] = json_data
+        
+        elif content_data is not None:
+            request_kwargs['content'] = content_data
+            request_kwargs['headers']['Content-Type'] = 'application/yaml'
+            
+        return request_kwargs
+
+
     def _make_request(
         self,
         method: str,
         endpoint: str,
         json_data: Optional[Dict[str, Any]] = None,
         content_data: Optional[str] = None,
-        params: Optional[Dict[str, Any]] = None,
-    ) -> Optional[Dict[str, Any]]:
+        params: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
         """Makes an authenticated request, handles token renewal implicitly by server."""
         token = self._get_session_token()
         if not token:
             logger.error(f"Authentication failed or credentials not provided for {self.server_url}")
             return None
 
-        headers = {'X-Auth-Token': token}
-        if content_data:
-            headers['Content-Type'] = 'application/yaml'
-
         url = f"{self.server_url}/{endpoint.lstrip('/')}"
-        logger.debug(f"Making {method.upper()} request to {url}")
-        
+        client_method = method.upper() 
         try:
-            with httpx.Client(verify=self.verify_ssl, timeout=self.timeout_config) as client:
+            request_kwargs = self._prepare_request_kwargs(
+                token=token,
+                json_data=json_data,
+                content_data=content_data,
+                params=params
+            )
 
-                response = client.post(url, content=content_data, headers=headers, params=params)
+            logger.debug(f"Making {method.upper()} request to {url}")
+                    
+            with httpx.Client(verify=self.verify_ssl, timeout=self.timeout_config) as client:
+                response = client.request(
+                    method=client_method, 
+                    url=url, 
+                    **request_kwargs 
+                )
 
             response.raise_for_status()
             response_data = response.json()
@@ -149,33 +187,28 @@ class RemoteAttackMateClient:
         self, playbook_yaml_content: str, debug: bool = False
     ) -> Optional[Dict[str, Any]]:
         """Executes a playbook by sending its YAML content."""
+        params = {'debug': 'true'} if debug else None
         return self._make_request(
             method='POST',
             endpoint='playbooks/execute/yaml',
             content_data=playbook_yaml_content,
-            params={'debug': 'true'} if debug else None # Pass as string for query params
-        )
+            params=params)
 
     def execute_remote_command(
         self,
         command_pydantic_model,
         debug: bool = False
     ) -> Optional[Dict[str, Any]]:
-        # get the correct enpoint
-        endpoint = 'command/execute'
 
         # Convert Pydantic model to dict for JSON body
         # handle None values for optional fields (exclude_none=True)
         command_body_dict = command_pydantic_model.model_dump(exclude_none=True)
-        request_payload = {
-            'command': command_body_dict
-        }
-
+        params = {'debug': 'true'} if debug else None
         return self._make_request(
             method='POST',
-            endpoint=endpoint,
-            json_data=request_payload,
-            params={'debug': True} if debug else None
+            endpoint='command/execute',
+            json_data=command_body_dict,
+            params=params
         )
 
 
