@@ -96,6 +96,7 @@ class RemoteAttackMateClient:
                     f'{e.response.status_code} - {e.response.text}'
                 )
             )
+            return None
         except Exception as e:
             logger.error(f'Login request to {self.server_url} failed: {e}', exc_info=True)
             return None
@@ -109,18 +110,20 @@ class RemoteAttackMateClient:
     ) -> Dict[str, Any]:
         """Prepares headers and payload arguments for httpx.request."""
 
-        headers = {'X-Auth-Token': token}
-        request_kwargs = {
+        headers: Dict[str, str] = {'X-Auth-Token': token}
+
+        if content_data is not None:
+            headers['Content-Type'] = 'application/yaml'
+
+        request_kwargs: Dict[str, Any] = {
             'headers': headers,
             'params': params,
         }
 
         if json_data is not None:
             request_kwargs['json'] = json_data
-
         elif content_data is not None:
             request_kwargs['content'] = content_data
-            request_kwargs['headers']['Content-Type'] = 'application/yaml'
 
         return request_kwargs
 
