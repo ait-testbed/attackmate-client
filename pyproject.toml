@@ -1,6 +1,6 @@
 [project]
-name = "attackmate-api-server"
-description = "API server for remote control and execution of AttackMate instances."
+name = "attackmate-client"
+description = "Client Class for remote control and execution of AttackMate instances."
 authors = [
     {name = "Thorina Boenke", email = "thorina.boenke@ait.ac.at"}
 ]
