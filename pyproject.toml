@@ -10,7 +10,8 @@ license = {text = "EUPL-1.2"}
 
 dependencies = [
     "httpx",
-     "PyYAML"
+    "prek>=0.3.2",
+    "PyYAML",
 ]
 dynamic = ["version"]
 

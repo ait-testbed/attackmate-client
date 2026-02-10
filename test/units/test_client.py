@@ -12,7 +12,7 @@ from attackmate_client.attackmate_client import (
 
 
 @pytest.fixture(autouse=True)
-def clear_sessions():
+def clear_sessions() -> Dict[str, Dict[str, Optional[str]]]:
     """Fixture to ensure the global session cache is empty before each test."""
     _active_sessions.clear()
     return _active_sessions
@@ -34,7 +34,10 @@ class MockCommandModel:
 # Helper function to simulate httpx responses
 
 
-def mock_response(status_code: int = 200, json_data: Optional[Dict[str, Any]] = None, text: str = ''):
+def mock_response(status_code: int = 200,
+                  json_data: Optional[Dict[str,
+                                           Any]] = None,
+                  text: str = '') -> httpx.Response:
     """Creates a mock httpx.Response object."""
     response = mock.MagicMock(spec=httpx.Response)
     response.status_code = status_code
@@ -64,7 +67,7 @@ class TestRemoteAttackMateClient:
     USERNAME = 'testuser'
     PASSWORD = 'testpassword'
 
-    def test_init_default(self):
+    def test_init_default(self) -> None:
         """Test default client initialization."""
         client = RemoteAttackMateClient(self.SERVER_URL, username=self.USERNAME, password=self.PASSWORD)
         assert client.server_url == self.SERVER_URL
@@ -73,7 +76,7 @@ class TestRemoteAttackMateClient:
         assert client.verify_ssl is True
         assert client.timeout_config.read == DEFAULT_TIMEOUT
 
-    def test_prepare_request_kwargs_json(self):
+    def test_prepare_request_kwargs_json(self) -> None:
         """Test request preparation for JSON payload."""
         token = '2345'
         json_data = {'key': 'value'}
@@ -86,7 +89,7 @@ class TestRemoteAttackMateClient:
         assert kwargs['params'] == params
         assert 'content' not in kwargs
 
-    def test_prepare_request_kwargs_yaml(self):
+    def test_prepare_request_kwargs_yaml(self) -> None:
         """Test request preparation for YAML/content payload."""
         token = '12345'
         content_data = 'playbook: []'
@@ -121,7 +124,7 @@ class TestClientLogin:
         assert clear_sessions[self.SERVER_URL]['user'] == self.USERNAME
 
     @mock.patch('httpx.Client')
-    def test_login_401_failure(self, MockClient, caplog, clear_sessions):
+    def test_login_401_failure(self, MockClient, caplog, clear_sessions) -> None:
         """Test login failure due to 401 Unauthorized status."""
         mock_response_instance = mock_response(status_code=401, text='Invalid credentials')
         MockClient.return_value.__enter__.return_value.post.return_value = mock_response_instance
@@ -144,13 +147,13 @@ class TestClientMakeRequest:
     NEW_TOKEN = 'renewed_token'
 
     @pytest.fixture
-    def setup_client(self, clear_sessions):
+    def setup_client(self, clear_sessions) -> RemoteAttackMateClient:
         """Setup client with a pre-cached token to skip login."""
         clear_sessions[self.SERVER_URL] = {'token': self.TOKEN, 'user': self.USERNAME}
         return RemoteAttackMateClient(self.SERVER_URL, username=self.USERNAME, password=self.PASSWORD)
 
     @mock.patch('httpx.Client')
-    def test_make_request_success(self, MockClient, setup_client):
+    def test_make_request_success(self, MockClient, setup_client) -> None:
         """Test successful GET request."""
         endpoint = 'status'
         expected_result = {'status': 'ok'}
@@ -163,7 +166,7 @@ class TestClientMakeRequest:
         MockClient.return_value.__enter__.return_value.request.assert_called_once()
 
     @mock.patch('httpx.Client')
-    def test_make_request_500_server_error(self, MockClient, setup_client, caplog):
+    def test_make_request_500_server_error(self, MockClient, setup_client, caplog) -> None:
         """Test handling of a generic server error (500)."""
         endpoint = 'action'
         mock_response_instance = mock_response(status_code=500, text='Internal Server Error')
