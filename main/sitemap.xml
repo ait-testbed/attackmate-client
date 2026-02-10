@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://ait-testbed.github.io/attackmate-client/main/</loc>
+         <lastmod>2026-02-10</lastmod>
+    </url>
+    <url>
+         <loc>https://ait-testbed.github.io/attackmate-client/main/cli-examples/</loc>
+         <lastmod>2026-02-10</lastmod>
+    </url>
+    <url>
+         <loc>https://ait-testbed.github.io/attackmate-client/main/cli-overview/</loc>
+         <lastmod>2026-02-10</lastmod>
+    </url>
+    <url>
+         <loc>https://ait-testbed.github.io/attackmate-client/main/client-examples/</loc>
+         <lastmod>2026-02-10</lastmod>
+    </url>
+    <url>
+         <loc>https://ait-testbed.github.io/attackmate-client/main/client/</loc>
+         <lastmod>2026-02-10</lastmod>
+    </url>
+    <url>
+         <loc>https://ait-testbed.github.io/attackmate-client/main/installation/</loc>
+         <lastmod>2026-02-10</lastmod>
+    </url>
+    <url>
+         <loc>https://ait-testbed.github.io/attackmate-client/main/license/</loc>
+         <lastmod>2026-02-10</lastmod>
+    </url>
+    <url>
+         <loc>https://ait-testbed.github.io/attackmate-client/main/quickstart/</loc>
+         <lastmod>2026-02-10</lastmod>
+    </url>
+</urlset>

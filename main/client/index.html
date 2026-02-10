@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="AIT Austrian Institute of Technology" /><link rel="canonical" href="https://ait-testbed.github.io/attackmate-client/main/client/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>RemoteAttackMateClient - AttackMate Client Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../css/version-select.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "RemoteAttackMateClient";
+        var mkdocs_page_input_path = "client.md";
+        var mkdocs_page_url = "/attackmate-client/main/client/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> AttackMate Client Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quick Start</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">CLI Usage</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli-overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli-examples/">Examples</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">RemoteAttackMateClient</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#class-overview">Class Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#constructor">Constructor</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#__init__">__init__()</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#example">Example</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#raises">Raises</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#methods">Methods</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#execute_remote_playbook_yaml">execute_remote_playbook_yaml()</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#parameters_1">Parameters</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#returns">Returns</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#example_1">Example</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#raises_1">Raises</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#execute_remote_command">execute_remote_command()</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#parameters_2">Parameters</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#returns_1">Returns</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#example_2">Example</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#raises_2">Raises</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#properties-and-internal-methods">Properties and Internal Methods</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#_get_session_token-internal">_get_session_token() (Internal)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_login-internal">_login() (Internal)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_make_request-internal">_make_request() (Internal)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#session-management">Session Management</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#how-it-works">How It Works</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#multiple-clients-same-server">Multiple Clients, Same Server</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#different-users-same-server">Different Users, Same Server</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#error-handling">Error Handling</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#common-scenarios">Common Scenarios</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#checking-for-errors">Checking for Errors</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#logging">Logging</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#log-levels">Log Levels</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#type-hints">Type Hints</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#thread-safety">Thread Safety</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#complete-example">Complete Example</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../client-examples/">Code Examples</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../license/">License</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">AttackMate Client Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">API Reference</li>
+      <li class="breadcrumb-item active">RemoteAttackMateClient</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/ait-testbed/attackmate-client/edit/master/docs/client.md">Edit on ait-testbed/attackmate-client</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="remoteattackmateclient-api-reference">RemoteAttackMateClient API Reference</h1>
+<p>The <code>RemoteAttackMateClient</code> class provides a Python API for interacting with the AttackMate server programmatically.</p>
+<h2 id="class-overview">Class Overview</h2>
+<pre><code class="language-python">from attackmate_client import RemoteAttackMateClient
+</code></pre>
+<p>The <code>RemoteAttackMateClient</code> handles:</p>
+<ul>
+<li>Authentication and token management</li>
+<li>SSL/TLS certificate verification</li>
+<li>HTTP request lifecycle</li>
+<li>Session management across multiple API calls</li>
+<li>Error handling and logging</li>
+</ul>
+<h2 id="constructor">Constructor</h2>
+<h3 id="__init__"><code>__init__()</code></h3>
+<pre><code class="language-python">RemoteAttackMateClient(
+    server_url: str,
+    cacert: Optional[str] = None,
+    username: Optional[str] = None,
+    password: Optional[str] = None,
+    timeout: float = 60.0
+)
+</code></pre>
+<p>Creates a new client instance for communicating with an AttackMate server.</p>
+<h4 id="parameters">Parameters</h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>server_url</code></td>
+<td><code>str</code></td>
+<td>Yes</td>
+<td>-</td>
+<td>Base URL of the AttackMate API server (e.g., <code>"https://attackmate.example.com:8445"</code>)</td>
+</tr>
+<tr>
+<td><code>cacert</code></td>
+<td><code>Optional[str]</code></td>
+<td>No</td>
+<td><code>None</code></td>
+<td>Path to CA certificate file for SSL verification. Use for self-signed certificates.</td>
+</tr>
+<tr>
+<td><code>username</code></td>
+<td><code>Optional[str]</code></td>
+<td>No</td>
+<td><code>None</code></td>
+<td>Username for authentication. Required if making authenticated requests.</td>
+</tr>
+<tr>
+<td><code>password</code></td>
+<td><code>Optional[str]</code></td>
+<td>No</td>
+<td><code>None</code></td>
+<td>Password for authentication. Required if making authenticated requests.</td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td><code>float</code></td>
+<td>No</td>
+<td><code>60.0</code></td>
+<td>Request timeout in seconds for long-running playbooks.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="example">Example</h4>
+<pre><code class="language-python">client = RemoteAttackMateClient(
+    server_url=&quot;https://attackmate.example.com:8445&quot;,
+    username=&quot;admin&quot;,
+    password=&quot;secure_password&quot;,
+    cacert=&quot;/path/to/ca-cert.pem&quot;,
+    timeout=120.0  # 2 minutes
+)
+</code></pre>
+<h4 id="raises">Raises</h4>
+<p>No exceptions are raised during initialization. Connection and authentication errors occur during method calls.</p>
+<hr />
+<h2 id="methods">Methods</h2>
+<h3 id="execute_remote_playbook_yaml"><code>execute_remote_playbook_yaml()</code></h3>
+<p>Executes a playbook by sending its YAML content to the remote server.</p>
+<pre><code class="language-python">def execute_remote_playbook_yaml(
+    self,
+    playbook_yaml_content: str,
+    debug: bool = False
+) -&gt; Optional[Dict[str, Any]]
+</code></pre>
+<h4 id="parameters_1">Parameters</h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>playbook_yaml_content</code></td>
+<td><code>str</code></td>
+<td>Yes</td>
+<td>-</td>
+<td>Complete YAML content of the playbook to execute</td>
+</tr>
+<tr>
+<td><code>debug</code></td>
+<td><code>bool</code></td>
+<td>No</td>
+<td><code>False</code></td>
+<td>Enable server-side debug logging for this execution</td>
+</tr>
+</tbody>
+</table>
+<h4 id="returns">Returns</h4>
+<ul>
+<li>
+<p><strong>On success</strong>: <code>Dict[str, Any]</code> containing:
+  <code>python
+  {
+      "success": bool,           # Execution success status
+      "message": str,            # Status or error message
+      "final_state": {           # Final execution state
+          "variables": dict,     # Variable store after execution
+          # ... other state fields
+      },
+      "current_token": str       # Renewed authentication token (optional)
+  }</code></p>
+</li>
+<li>
+<p><strong>On failure</strong>: <code>None</code></p>
+</li>
+</ul>
+<h4 id="example_1">Example</h4>
+<pre><code class="language-python">with open(&quot;playbook.yaml&quot;, &quot;r&quot;) as f:
+    yaml_content = f.read()
+
+result = client.execute_remote_playbook_yaml(
+    playbook_yaml_content=yaml_content,
+    debug=True
+)
+
+if result and result.get(&quot;success&quot;):
+    print(&quot;Playbook executed successfully!&quot;)
+    variables = result.get(&quot;final_state&quot;, {}).get(&quot;variables&quot;, {})
+    print(f&quot;Final variables: {variables}&quot;)
+else:
+    print(&quot;Playbook execution failed&quot;)
+</code></pre>
+<h4 id="raises_1">Raises</h4>
+<p>Does not raise exceptions. Returns <code>None</code> on errors. Check logs for details.</p>
+<hr />
+<h3 id="execute_remote_command"><code>execute_remote_command()</code></h3>
+<p>Executes a single command using a Pydantic model.</p>
+<pre><code class="language-python">def execute_remote_command(
+    self,
+    command_pydantic_model,
+    debug: bool = False
+) -&gt; Optional[Dict[str, Any]]
+</code></pre>
+<h4 id="parameters_2">Parameters</h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>command_pydantic_model</code></td>
+<td>Pydantic Model</td>
+<td>Yes</td>
+<td>-</td>
+<td>Pydantic model instance representing the command to execute</td>
+</tr>
+<tr>
+<td><code>debug</code></td>
+<td><code>bool</code></td>
+<td>No</td>
+<td><code>False</code></td>
+<td>Enable server-side debug logging</td>
+</tr>
+</tbody>
+</table>
+<h4 id="returns_1">Returns</h4>
+<p>Similar structure to <code>execute_remote_playbook_yaml()</code>:</p>
+<ul>
+<li><strong>On success</strong>: <code>Dict[str, Any]</code> with execution results</li>
+<li><strong>On failure</strong>: <code>None</code></li>
+</ul>
+<h4 id="example_2">Example</h4>
+<pre><code class="language-python">from pydantic import BaseModel
+
+class ShellCommand(BaseModel):
+    command: str
+    args: list[str]
+
+command = ShellCommand(
+    command=&quot;echo&quot;,
+    args=[&quot;Hello, AttackMate!&quot;]
+)
+
+result = client.execute_remote_command(command, debug=False)
+
+if result:
+    print(f&quot;Command result: {result.get('message')}&quot;)
+</code></pre>
+<h4 id="raises_2">Raises</h4>
+<p>Does not raise exceptions. Returns <code>None</code> on errors.</p>
+<hr />
+<h2 id="properties-and-internal-methods">Properties and Internal Methods</h2>
+<p>The following methods are internal and typically not called directly:</p>
+<h3 id="_get_session_token-internal"><code>_get_session_token()</code> (Internal)</h3>
+<p>Retrieves or creates an authentication token. Called automatically by request methods.</p>
+<h3 id="_login-internal"><code>_login()</code> (Internal)</h3>
+<p>Performs authentication and stores the token. Called automatically when needed.</p>
+<h3 id="_make_request-internal"><code>_make_request()</code> (Internal)</h3>
+<p>Generic HTTP request handler. Manages token renewal and error handling.</p>
+<hr />
+<h2 id="session-management">Session Management</h2>
+<p>The client maintains session state globally per server URL:</p>
+<pre><code class="language-python"># Token storage is managed automatically
+_active_sessions: Dict[str, Dict[str, str]] = {}
+</code></pre>
+<h3 id="how-it-works">How It Works</h3>
+<ol>
+<li><strong>First request</strong>: Client authenticates and stores token</li>
+<li><strong>Subsequent requests</strong>: Client reuses stored token</li>
+<li><strong>Token expiration</strong>: Server returns renewed token, client updates cache</li>
+<li><strong>401 Unauthorized</strong>: Client clears cached token, re-authenticates on next request</li>
+</ol>
+<h3 id="multiple-clients-same-server">Multiple Clients, Same Server</h3>
+<pre><code class="language-python"># Both clients share the same token for this server
+client1 = RemoteAttackMateClient(
+    server_url=&quot;https://attackmate.example.com:8445&quot;,
+    username=&quot;user1&quot;,
+    password=&quot;pass1&quot;
+)
+
+client2 = RemoteAttackMateClient(
+    server_url=&quot;https://attackmate.example.com:8445&quot;,
+    username=&quot;user1&quot;,  # Same user
+    password=&quot;pass1&quot;
+)
+
+# First client authenticates
+result1 = client1.execute_remote_playbook_yaml(yaml_content)
+
+# Second client reuses the token (no re-authentication needed)
+result2 = client2.execute_remote_playbook_yaml(yaml_content)
+</code></pre>
+<h3 id="different-users-same-server">Different Users, Same Server</h3>
+<pre><code class="language-python"># Different users get different tokens
+admin_client = RemoteAttackMateClient(
+    server_url=&quot;https://attackmate.example.com:8445&quot;,
+    username=&quot;admin&quot;,
+    password=&quot;admin_pass&quot;
+)
+
+user_client = RemoteAttackMateClient(
+    server_url=&quot;https://attackmate.example.com:8445&quot;,
+    username=&quot;regular_user&quot;,
+    password=&quot;user_pass&quot;
+)
+
+# Each client gets its own token
+admin_result = admin_client.execute_remote_playbook_yaml(yaml_content)
+user_result = user_client.execute_remote_playbook_yaml(yaml_content)
+</code></pre>
+<hr />
+<h2 id="error-handling">Error Handling</h2>
+<p>The client handles errors gracefully without raising exceptions:</p>
+<h3 id="common-scenarios">Common Scenarios</h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Behavior</th>
+<th>Return Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Authentication failure</td>
+<td>Logs error</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td>Network error</td>
+<td>Logs error</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td>HTTP 4xx/5xx error</td>
+<td>Logs status and detail</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td>Token expired (401)</td>
+<td>Clears token, logs warning</td>
+<td><code>None</code> (will re-auth on retry)</td>
+</tr>
+<tr>
+<td>Invalid JSON response</td>
+<td>Logs decode error</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td>SSL verification failure</td>
+<td>Logs error</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="checking-for-errors">Checking for Errors</h3>
+<pre><code class="language-python">result = client.execute_remote_playbook_yaml(yaml_content)
+
+if result is None:
+    print(&quot;ERROR: Request failed - check logs&quot;)
+    exit(1)
+
+if not result.get(&quot;success&quot;):
+    print(f&quot;ERROR: Playbook failed - {result.get('message')}&quot;)
+    exit(1)
+
+print(&quot;Success!&quot;)
+</code></pre>
+<hr />
+<h2 id="logging">Logging</h2>
+<p>The client uses Python's <code>logging</code> module. Configure logging to see detailed information:</p>
+<pre><code class="language-python">import logging
+
+# Enable debug logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+# Now client operations will be logged
+client = RemoteAttackMateClient(...)
+</code></pre>
+<h3 id="log-levels">Log Levels</h3>
+<ul>
+<li><strong>DEBUG</strong>: HTTP requests, token management, detailed flow</li>
+<li><strong>INFO</strong>: Authentication success, token renewal</li>
+<li><strong>WARNING</strong>: Token expiration, retryable issues</li>
+<li><strong>ERROR</strong>: Request failures, authentication errors</li>
+</ul>
+<hr />
+<h2 id="type-hints">Type Hints</h2>
+<p>The client is fully type-hinted for IDE support:</p>
+<pre><code class="language-python">from typing import Dict, Any, Optional
+
+result: Optional[Dict[str, Any]] = client.execute_remote_playbook_yaml(
+    playbook_yaml_content=yaml_str,
+    debug=False
+)
+
+if result:
+    success: bool = result.get(&quot;success&quot;, False)
+    message: str = result.get(&quot;message&quot;, &quot;&quot;)
+</code></pre>
+<hr />
+<h2 id="thread-safety">Thread Safety</h2>
+<div class="admonition warning">
+<p class="admonition-title">Not Thread-Safe</p>
+<p>The global <code>_active_sessions</code> dictionary is <strong>not thread-safe</strong>. If using the client in a multi-threaded application, implement your own locking mechanism or create separate client instances per thread.</p>
+</div>
+<hr />
+<h2 id="complete-example">Complete Example</h2>
+<pre><code class="language-python">import logging
+from attackmate_client import RemoteAttackMateClient
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+
+# Initialize client
+client = RemoteAttackMateClient(
+    server_url=&quot;https://attackmate.example.com:8445&quot;,
+    username=&quot;admin&quot;,
+    password=&quot;secure_password&quot;,
+    cacert=&quot;/etc/ssl/certs/attackmate-ca.crt&quot;,
+    timeout=180.0
+)
+
+# Read playbook
+with open(&quot;security_scan.yaml&quot;, &quot;r&quot;) as f:
+    playbook_yaml = f.read()
+
+# Execute playbook
+result = client.execute_remote_playbook_yaml(
+    playbook_yaml_content=playbook_yaml,
+    debug=True
+)
+
+# Handle result
+if not result:
+    print(&quot;ERROR: Request failed&quot;)
+    exit(1)
+
+if result.get(&quot;success&quot;):
+    print(f&quot;✓ Success: {result.get('message')}&quot;)
+
+    # Access final state
+    final_state = result.get(&quot;final_state&quot;, {})
+    variables = final_state.get(&quot;variables&quot;, {})
+
+    print(&quot;\nFinal Variables:&quot;)
+    for key, value in variables.items():
+        print(f&quot;  {key}: {value}&quot;)
+else:
+    print(f&quot;✗ Failed: {result.get('message')}&quot;)
+    exit(1)
+</code></pre>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li>See <a href="../client-examples/">Code Examples</a> for practical integration patterns</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../cli-examples/" class="btn btn-neutral float-left" title="Examples"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../client-examples/" class="btn btn-neutral float-right" title="Code Examples">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/ait-testbed/attackmate-client" class="fa fa-code-fork" style="color: #fcfcfc"> ait-testbed/attackmate-client</a>
+        </span>
+    
+    
+      <span><a href="../cli-examples/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../client-examples/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+      <script src="../js/version-select.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
