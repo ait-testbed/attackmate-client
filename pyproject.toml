@@ -7,7 +7,7 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "EUPL-1.2"}
-
+dynamic = ["version"]
 dependencies = [
     "httpx",
     "prek>=0.3.2",
@@ -23,7 +23,7 @@ dev = [
     "types-requests",
 ]
 
-dynamic = ["version"]
+
 
 [project.scripts]
 attackmate-client = "main:app"
