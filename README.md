@@ -10,10 +10,17 @@ git clone [https://github.com/ait-testbed/attackmate-client](https://github.com/
 cd attackmate-client
 ```
 
-Install the client:
+With uv (recommended):
 
 ```bash
-pip install .
+uv sync --dev
+```
+
+Using pip and virtualenv:
+```
+python -m venv venv
+source venv/bin/activate
+pip install -e .
 ```
 
 ## Usage
@@ -36,7 +43,7 @@ Common Options
 This command reads the YAML content from a local file and sends the full content directly to the AttackMate server's /playbooks/execute/yaml endpoint for execution.
 
 ```bash
-attackmate-client  /path/to/local_playbook.yaml --username <user> --password <pass> --cacert /path/to/cert
+uv run attackmate-client  /path/to/local_playbook.yaml --username <user> --password <pass> --cacert /path/to/cert
 ```
 
 ## Use in scripts
