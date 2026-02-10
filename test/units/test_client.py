@@ -12,7 +12,7 @@ from attackmate_client.attackmate_client import (
 
 
 @pytest.fixture(autouse=True)
-def clear_sessions() -> Dict[str, Dict[str, Optional[str]]]:
+def clear_sessions() -> dict[str, dict[str, Any]]:
     """Fixture to ensure the global session cache is empty before each test."""
     _active_sessions.clear()
     return _active_sessions
