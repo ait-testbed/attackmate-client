@@ -10,17 +10,21 @@ license = {text = "EUPL-1.2"}
 dynamic = ["version"]
 dependencies = [
     "httpx",
+    "mkdocs>=1.6.1",
     "prek>=0.3.2",
     "PyYAML",
 ]
 
 [dependency-groups]
 dev = [
-    "prek>=0.2.8",
+    "mike>=2.1.3",
     "pytest>=8.4.1",
     "pytest-mock",
     "pytest-cov>=6.2.1",
     "types-requests",
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.5.0",
+    "pymdown-extensions>=10.0"
 ]
 
 

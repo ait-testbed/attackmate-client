@@ -1,6 +1,8 @@
 **/__pycache__
 cert.pem
 key.pem
+# MkDocs build output
+site/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

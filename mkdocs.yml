@@ -1,0 +1,30 @@
+site_name: AttackMate Client Documentation
+site_description: Command-line client for interacting with the AttackMate API server
+site_author: AIT Austrian Institute of Technology
+site_url: https://ait-testbed.github.io/attackmate-client
+
+repo_name: ait-testbed/attackmate-client
+repo_url: https://github.com/ait-testbed/attackmate-client
+
+
+theme:
+  name: readthedocs
+
+
+
+
+markdown_extensions:
+  - admonition
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: installation.md
+    - Quick Start: quickstart.md
+  - CLI Usage:
+    - Overview: cli-overview.md
+    - Examples: cli-examples.md
+  - API Reference:
+    - RemoteAttackMateClient: client.md
+    - Code Examples: client-examples.md
+  - License: license.md
