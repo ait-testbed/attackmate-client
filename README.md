@@ -91,7 +91,7 @@ RemoteAttackMateClient(
 
 #### Available Methods
 
-##### `execute_remote_playbook_yaml(playbook_yaml_content: str, debug: bool = False) -> Optional[Dict[str, Any]]`
+##### `execute_remote_playbook_yaml(playbook_yaml_content: str, debug: bool = False)`
 
 Executes a playbook by sending its YAML content to the remote server.
 
@@ -106,7 +106,7 @@ Executes a playbook by sending its YAML content to the remote server.
   - `final_state` (dict): Final state including variables
 - `None` on failure
 
-##### `execute_remote_command(command_pydantic_model, debug: bool = False) -> Optional[Dict[str, Any]]`
+##### `execute_remote_command(command_pydantic_model, debug: bool = False)`
 
 Executes a single command using a Pydantic model.
 
