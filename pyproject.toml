@@ -13,6 +13,16 @@ dependencies = [
     "prek>=0.3.2",
     "PyYAML",
 ]
+
+[dependency-groups]
+dev = [
+    "prek>=0.2.8",
+    "pytest>=8.4.1",
+    "pytest-mock",
+    "pytest-cov>=6.2.1",
+    "types-requests",
+]
+
 dynamic = ["version"]
 
 [project.scripts]
