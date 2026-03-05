@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 import json
+import threading
 from typing import Dict, Any, Optional, Tuple
 
 import httpx
@@ -12,6 +13,7 @@ logger = logging.getLogger('playbook')
 
 # Global cache for active sessions (token storage)
 _active_sessions: Dict[str, Dict[str, str]] = {}
+_sessions_lock = threading.Lock()
 DEFAULT_TIMEOUT = 60.0
 
 
@@ -54,13 +56,15 @@ class RemoteAttackMateClient:
 
     def _get_session_token(self) -> Optional[str]:
         """Retrieves a valid token for the server_url from memory, logs in if necessary."""
-        session_data = _active_sessions.get(self.server_url)
-        # Check if token exists for the current user
-        if session_data and session_data.get('user') == self.username:
-            logger.debug(f"Using existing token for {self.server_url} by user {session_data['user']}")
-            return session_data['token']
-        # If not, try login with credentials
-        elif self.username and self.password:
+        with _sessions_lock:
+            session_data = _active_sessions.get(self.server_url)
+            # Check if token exists for the current user
+            if session_data and session_data.get('user') == self.username:
+                logger.debug(f"Using existing token for {self.server_url} by user {session_data['user']}")
+                return session_data['token']
+
+        # If not, try login with credentials (outside lock — network I/O should not block other threads)
+        if self.username and self.password:
             return self._login(self.username, self.password)
         return None
 
@@ -78,11 +82,19 @@ class RemoteAttackMateClient:
             token = data.get('access_token')
 
             if token:
-                # Store the token globally
-                _active_sessions[self.server_url] = {
-                    'token': token,
-                    'user': username
-                }
+                # Store the token globally, guarded by the lock
+                with _sessions_lock:
+                    # Re-check under lock: another thread may have logged in while we were waiting
+                    existing = _active_sessions.get(self.server_url)
+                    if existing and existing.get('user') == username:
+                        logger.debug(
+                            f"Token for '{username}' at {self.server_url} stored by another thread. "
+                            'Using existing token.')
+                        return existing['token']
+                    _active_sessions[self.server_url] = {
+                        'token': token,
+                        'user': username
+                    }
                 logger.info(f"Login successful for '{username}' at {self.server_url}. Token stored.")
                 return token
             else:
@@ -169,7 +181,8 @@ class RemoteAttackMateClient:
 
             if e.response.status_code == 401:
                 logger.warning(f'Token expired or invalid for {self.server_url}. Clearing session cache.')
-                _active_sessions.pop(self.server_url, None)
+                with _sessions_lock:
+                    _active_sessions.pop(self.server_url, None)
                 if self.username and self.password:
                     new_token = self._login(self.username, self.password)
                     if new_token:
