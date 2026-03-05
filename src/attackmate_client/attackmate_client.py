@@ -12,8 +12,8 @@ import yaml
 
 logger = logging.getLogger('playbook')
 
-# Global cache for active sessions (token storage)
-_active_sessions: Dict[str, Dict[str, str]] = {}
+# Global cache for active sessions (token storage), keyed by (server_url, username)
+_active_sessions: Dict[Tuple[str, str], str] = {}
 _sessions_lock = threading.Lock()
 DEFAULT_TIMEOUT = 60.0
 
@@ -27,9 +27,9 @@ class RemoteAttackMateClient:
     def __init__(
         self,
         server_url: str,
+        username: str,
+        password: SecretStr,
         cacert: Optional[str] = None,
-        username: Optional[str] = None,
-        password: Optional[SecretStr] = None,
         timeout: float = DEFAULT_TIMEOUT,
     ):
         self.server_url = server_url.rstrip('/')
@@ -58,16 +58,13 @@ class RemoteAttackMateClient:
     def _get_session_token(self) -> Optional[str]:
         """Retrieves a valid token for the server_url from memory, logs in if necessary."""
         with _sessions_lock:
-            session_data = _active_sessions.get(self.server_url)
-            # Check if token exists for the current user
-            if session_data and session_data.get('user') == self.username:
-                logger.debug(f"Using existing token for {self.server_url} by user {session_data['user']}")
-                return session_data['token']
+            token = _active_sessions.get((self.server_url, self.username))
+            if token:
+                logger.debug(f'Using existing token for {self.server_url} by user {self.username}')
+                return token
 
         # If not, try login with credentials (outside lock — network I/O should not block other threads)
-        if self.username and self.password:
-            return self._login(self.username, self.password)
-        return None
+        return self._login(self.username, self.password)
 
     def _login(self, username: str, password: SecretStr) -> Optional[str]:
         """Internal login method, stores token."""
@@ -90,16 +87,15 @@ class RemoteAttackMateClient:
                 # Store the token globally, guarded by the lock
                 with _sessions_lock:
                     # Re-check under lock: another thread may have logged in while we were waiting
-                    existing = _active_sessions.get(self.server_url)
-                    if existing and existing.get('user') == username:
+                    session_key = (self.server_url, username)
+                    existing_token = _active_sessions.get(session_key)
+                    if existing_token:
                         logger.debug(
                             f"Token for '{username}' at {self.server_url} stored by another thread. "
-                            'Using existing token.')
-                        return existing['token']
-                    _active_sessions[self.server_url] = {
-                        'token': token,
-                        'user': username
-                    }
+                            'Using existing token.'
+                        )
+                        return existing_token
+                    _active_sessions[session_key] = token
                 logger.info(f"Login successful for '{username}' at {self.server_url}. Token stored.")
                 return token
             else:
@@ -187,16 +183,16 @@ class RemoteAttackMateClient:
             if e.response.status_code == 401:
                 logger.warning(f'Token expired or invalid for {self.server_url}. Clearing session cache.')
                 with _sessions_lock:
-                    _active_sessions.pop(self.server_url, None)
-                if self.username and self.password:
-                    new_token = self._login(self.username, self.password)
-                    if new_token:
-                        try:
-                            return _dispatch_request(explicit_token=new_token).json()
-                        except Exception as retry_e:
-                            logger.error(
-                                f'Retry after re-login failed ({method} {url}): {retry_e}',
-                                exc_info=True)
+                    _active_sessions.pop((self.server_url, self.username), None)
+
+                new_token = self._login(self.username, self.password)
+                if new_token:
+                    try:
+                        return _dispatch_request(explicit_token=new_token).json()
+                    except Exception as retry_e:
+                        logger.error(
+                            f'Retry after re-login failed ({method} {url}): {retry_e}',
+                            exc_info=True)
             return None
         except httpx.RequestError as e:
             logger.error(f'Request Error ({method} {url}): {e}')
@@ -284,7 +280,7 @@ def main():
         server_url=args.server_url,
         cacert=args.cacert,
         username=args.username,
-        password=args.password
+        password=SecretStr(args.password)
     )
 
     try:
