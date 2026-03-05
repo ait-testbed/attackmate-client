@@ -1,14 +1,11 @@
-import argparse
+import json
 import logging
 import os
-import sys
-import json
 import threading
-from typing import Dict, Any, Optional, Tuple
-from pydantic import SecretStr
+from typing import Any, Dict, Optional, Tuple
 
 import httpx
-import yaml
+from pydantic import SecretStr
 
 logger = logging.getLogger('playbook')
 
@@ -72,12 +69,13 @@ class RemoteAttackMateClient:
         logger.info(f"Attempting login to {login_url} for user '{username}'...")
         try:
             with httpx.Client(verify=self.verify_ssl, timeout=self.timeout_config) as client:
-                # The API expects the credentials as form data
                 response = client.post(
                     login_url,
                     data={
                         'username': username,
-                        'password': password.get_secret_value()})
+                        'password': password.get_secret_value(),
+                    },
+                )
 
             response.raise_for_status()
             data = response.json()
@@ -104,10 +102,8 @@ class RemoteAttackMateClient:
                 return None
         except httpx.HTTPStatusError as e:
             logger.error(
-                (
-                    f"Login failed for '{username}' at {self.server_url}: "
-                    f'{e.response.status_code} - {e.response.text}'
-                )
+                f"Login failed for '{username}' at {self.server_url}: "
+                f'{e.response.status_code} - {e.response.text}'
             )
             return None
         except Exception as e:
@@ -141,13 +137,14 @@ class RemoteAttackMateClient:
         return request_kwargs
 
     def _make_authenticated_request(
-            self,
-            method: str,
-            endpoint: str,
-            json_data: Optional[Dict[str, Any]] = None,
-            content_data: Optional[str] = None,
-            params: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
-        """Makes an authenticated request, handles token renewal implicitly by server."""
+        self,
+        method: str,
+        endpoint: str,
+        json_data: Optional[Dict[str, Any]] = None,
+        content_data: Optional[str] = None,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Makes an authenticated request, handles token renewal on 401."""
         token = self._get_session_token()
         if not token:
             logger.error(f'Authentication failed or credentials not provided for {self.server_url}')
@@ -161,7 +158,7 @@ class RemoteAttackMateClient:
                 token=explicit_token,
                 json_data=json_data,
                 content_data=content_data,
-                params=params
+                params=params,
             )
             logger.debug(f'Making {client_method} request to {url}')
             with httpx.Client(verify=self.verify_ssl, timeout=self.timeout_config) as client:
@@ -192,7 +189,8 @@ class RemoteAttackMateClient:
                     except Exception as retry_e:
                         logger.error(
                             f'Retry after re-login failed ({method} {url}): {retry_e}',
-                            exc_info=True)
+                            exc_info=True,
+                        )
             return None
         except httpx.RequestError as e:
             logger.error(f'Request Error ({method} {url}): {e}')
@@ -213,85 +211,20 @@ class RemoteAttackMateClient:
             method='POST',
             endpoint='playbooks/execute/yaml',
             content_data=playbook_yaml_content,
-            params=params)
+            params=params,
+        )
 
     def execute_remote_command(
         self,
         command_pydantic_model,
-        debug: bool = False
+        debug: bool = False,
     ) -> Optional[Dict[str, Any]]:
-
-        # Convert Pydantic model to dict for JSON body
-        # handle None values for optional fields (exclude_none=True)
+        """Executes a single command by sending a Pydantic model as JSON."""
         command_body_dict = command_pydantic_model.model_dump(exclude_none=True)
         params = {'debug': 'true'} if debug else None
         return self._make_authenticated_request(
             method='POST',
             endpoint='command/execute',
             json_data=command_body_dict,
-            params=params
+            params=params,
         )
-
-
-def print_result(result_data: Optional[Dict[str, Any]], action: str):
-    if not result_data:
-        logger.error(f'{action} failed. See logs above for details.')
-        sys.exit(1)
-
-    print(f'\n--- {action} Result ---')
-    print(f"Success: {result_data.get('success', 'N/A')}")
-    print(f"Message: {result_data.get('message', 'No message.')}")
-
-    final_state = result_data.get('final_state')
-    if final_state and final_state.get('variables'):
-        print('\n--- Final Variable Store State ---')
-        print(yaml.safe_dump(final_state['variables'], indent=2, default_flow_style=False))
-
-    if not result_data.get('success'):
-        sys.exit(1)
-
-
-def main():
-    """Main entry point for the attackmate-client CLI."""
-    parser = argparse.ArgumentParser(description='AttackMate Playbook Client for Remote API Execution')
-    # Required Positional Argument: Playbook file path
-    parser.add_argument(
-        'playbook_file',
-        help='Path to the local playbook YAML file to execute.'
-    )
-
-    parser.add_argument('--server-url', default='https://localhost:8445',
-                        help='Base URL of the AttackMate API server (default: https://localhost:8445)')
-    parser.add_argument('--username', required=True, help='API username for authentication.')
-    parser.add_argument('--password', required=True, help='API password for authentication.')
-    parser.add_argument(
-        '--cacert',
-        help='Path to the server\'s self-signed certificate file for verification.')
-    parser.add_argument('--debug', action='store_true', help='Enable server debug logging for this instance.')
-
-    args = parser.parse_args()
-
-    if not os.path.exists(args.playbook_file):
-        logger.error(f'Local playbook file not found: {args.playbook_file}')
-        sys.exit(1)
-
-    # Initialize the client
-    client = RemoteAttackMateClient(
-        server_url=args.server_url,
-        cacert=args.cacert,
-        username=args.username,
-        password=SecretStr(args.password)
-    )
-
-    try:
-        with open(args.playbook_file, 'r') as f:
-            yaml_content = f.read()
-        result = client.execute_remote_playbook_yaml(yaml_content, args.debug)
-        print_result(result, f'Playbook Execution (YAML: {args.playbook_file})')
-    except IOError as e:
-        logger.error(f'Failed to read file: {e}')
-        sys.exit(1)
-
-
-if __name__ == '__main__':
-    main()
