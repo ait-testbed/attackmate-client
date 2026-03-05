@@ -13,6 +13,7 @@ dependencies = [
     "mkdocs>=1.6.1",
     "prek>=0.3.2",
     "PyYAML",
+    "pydantic"
 ]
 
 [dependency-groups]

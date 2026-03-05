@@ -4,16 +4,17 @@ This page provides comprehensive code examples for integrating the `RemoteAttack
 
 ## Basic Usage
 
-### Simple Playbook Execution
+### Simple Playbook Execution With Self-Signed Certificate
 
 ```python
 from attackmate_client import RemoteAttackMateClient
 
 # Initialize the client
 client = RemoteAttackMateClient(
-    server_url="https://attackmate.example.com:8445",
+    server_url="https://localhost:8445",
     username="admin",
-    password="mypassword"
+    password="adminpass",
+    cacert="/path/to/self-signed-ca.crt"
 )
 
 # Read and execute playbook
@@ -27,25 +28,6 @@ if result and result.get("success"):
     print("✓ Playbook executed successfully!")
 else:
     print("✗ Playbook execution failed")
-```
-
-### With Self-Signed Certificate
-
-```python
-from attackmate_client import RemoteAttackMateClient
-
-client = RemoteAttackMateClient(
-    server_url="https://localhost:8445",
-    username="admin",
-    password="adminpass",
-    cacert="/path/to/self-signed-ca.crt"
-)
-
-with open("test.yaml", "r") as f:
-    result = client.execute_remote_playbook_yaml(f.read(), debug=True)
-
-if result:
-    print(f"Message: {result.get('message')}")
 ```
 
 ## Error Handling Patterns

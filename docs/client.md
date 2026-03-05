@@ -21,11 +21,13 @@ The `RemoteAttackMateClient` handles:
 ### `__init__()`
 
 ```python
+from pydantic import SecretStr
+
 RemoteAttackMateClient(
     server_url: str,
+    username: str = None,
+    password: SecretStr = None,
     cacert: Optional[str] = None,
-    username: Optional[str] = None,
-    password: Optional[str] = None,
     timeout: float = 60.0
 )
 ```
@@ -37,18 +39,19 @@ Creates a new client instance for communicating with an AttackMate server.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `server_url` | `str` | Yes | - | Base URL of the AttackMate API server (e.g., `"https://attackmate.example.com:8445"`) |
+| `username` | `str` | No | `None` | Username for authentication. Required if making authenticated requests. |
+| `password` | `SecretStr` | No | `None` | Password for authentication. Required if making authenticated requests. |
 | `cacert` | `Optional[str]` | No | `None` | Path to CA certificate file for SSL verification. Use for self-signed certificates. |
-| `username` | `Optional[str]` | No | `None` | Username for authentication. Required if making authenticated requests. |
-| `password` | `Optional[str]` | No | `None` | Password for authentication. Required if making authenticated requests. |
 | `timeout` | `float` | No | `60.0` | Request timeout in seconds for long-running playbooks. |
 
 #### Example
 
 ```python
+from pydantic import SecretStr
 client = RemoteAttackMateClient(
     server_url="https://attackmate.example.com:8445",
     username="admin",
-    password="secure_password",
+    password=SecretStr("secure_password"),
     cacert="/path/to/ca-cert.pem",
     timeout=120.0  # 2 minutes
 )
@@ -152,15 +155,11 @@ Similar structure to `execute_remote_playbook_yaml()`:
 #### Example
 
 ```python
-from pydantic import BaseModel
+from attacmkate import DebugCommand
 
-class ShellCommand(BaseModel):
-    command: str
-    args: list[str]
-
-command = ShellCommand(
-    command="echo",
-    args=["Hello, AttackMate!"]
+command = DebugCommand(
+    type="debug"
+    cmd="hello world",
 )
 
 result = client.execute_remote_command(command, debug=False)
@@ -187,7 +186,7 @@ Retrieves or creates an authentication token. Called automatically by request me
 
 Performs authentication and stores the token. Called automatically when needed.
 
-### `_make_request()` (Internal)
+### `_make_authenticated_request()` (Internal)
 
 Generic HTTP request handler. Manages token renewal and error handling.
 
@@ -199,59 +198,14 @@ The client maintains session state globally per server URL:
 
 ```python
 # Token storage is managed automatically
-_active_sessions: Dict[str, Dict[str, str]] = {}
+_active_sessions: Dict[Tuple[str, str], str] = {}
 ```
 
 ### How It Works
 
 1. **First request**: Client authenticates and stores token
 2. **Subsequent requests**: Client reuses stored token
-3. **Token expiration**: Server returns renewed token, client updates cache
-4. **401 Unauthorized**: Client clears cached token, re-authenticates on next request
-
-### Multiple Clients, Same Server
-
-```python
-# Both clients share the same token for this server
-client1 = RemoteAttackMateClient(
-    server_url="https://attackmate.example.com:8445",
-    username="user1",
-    password="pass1"
-)
-
-client2 = RemoteAttackMateClient(
-    server_url="https://attackmate.example.com:8445",
-    username="user1",  # Same user
-    password="pass1"
-)
-
-# First client authenticates
-result1 = client1.execute_remote_playbook_yaml(yaml_content)
-
-# Second client reuses the token (no re-authentication needed)
-result2 = client2.execute_remote_playbook_yaml(yaml_content)
-```
-
-### Different Users, Same Server
-
-```python
-# Different users get different tokens
-admin_client = RemoteAttackMateClient(
-    server_url="https://attackmate.example.com:8445",
-    username="admin",
-    password="admin_pass"
-)
-
-user_client = RemoteAttackMateClient(
-    server_url="https://attackmate.example.com:8445",
-    username="regular_user",
-    password="user_pass"
-)
-
-# Each client gets its own token
-admin_result = admin_client.execute_remote_playbook_yaml(yaml_content)
-user_result = user_client.execute_remote_playbook_yaml(yaml_content)
-```
+3. **401 Unauthorized**: Client clears cached token, re-authenticates on next request
 
 ---
 
@@ -331,14 +285,6 @@ if result:
     message: str = result.get("message", "")
 ```
 
----
-
-## Thread Safety
-
-!!! warning "Not Thread-Safe"
-    The global `_active_sessions` dictionary is **not thread-safe**. If using the client in a multi-threaded application, implement your own locking mechanism or create separate client instances per thread.
-
----
 
 ## Complete Example
 
