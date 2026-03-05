@@ -4,6 +4,7 @@ import logging
 import httpx
 from unittest import mock
 from typing import Dict, Any, Optional
+from pydantic import SecretStr
 from attackmate_client.attackmate_client import (
     RemoteAttackMateClient,
     _active_sessions,
@@ -12,7 +13,7 @@ from attackmate_client.attackmate_client import (
 
 
 @pytest.fixture(autouse=True)
-def clear_sessions() -> dict[str, dict[str, Any]]:
+def clear_sessions() -> dict[tuple[str, str], str]:
     """Fixture to ensure the global session cache is empty before each test."""
     _active_sessions.clear()
     return _active_sessions
@@ -30,14 +31,14 @@ class MockCommandModel:
         if exclude_none:
             return {k: v for k, v in self._data.items() if v is not None}
         return self._data
-
 # Helper function to simulate httpx responses
 
 
-def mock_response(status_code: int = 200,
-                  json_data: Optional[Dict[str,
-                                           Any]] = None,
-                  text: str = '') -> httpx.Response:
+def mock_response(
+    status_code: int = 200,
+    json_data: Optional[Dict[str, Any]] = None,
+    text: str = '',
+) -> httpx.Response:
     """Creates a mock httpx.Response object."""
     response = mock.MagicMock(spec=httpx.Response)
     response.status_code = status_code
@@ -51,10 +52,11 @@ def mock_response(status_code: int = 200,
         response.json.return_value = json_data
     else:
         # Ensure json() call fails for non-JSON content or success with empty body
-        response.json.side_effect = json.JSONDecodeError(
-            'No JSON content',
-            doc=text or 'None',
-            pos=0) if status_code != 204 and not json_data else None
+        response.json.side_effect = (
+            json.JSONDecodeError('No JSON content', doc=text or 'None', pos=0)
+            if status_code != 204 and not json_data
+            else None
+        )
         if status_code == 200 and not text and not json_data:
             response.json.return_value = {}
 
@@ -65,11 +67,13 @@ class TestRemoteAttackMateClient:
 
     SERVER_URL = 'http://api.test'
     USERNAME = 'testuser'
-    PASSWORD = 'testpassword'
+    PASSWORD = SecretStr('testpassword')
 
     def test_init_default(self) -> None:
         """Test default client initialization."""
-        client = RemoteAttackMateClient(self.SERVER_URL, username=self.USERNAME, password=self.PASSWORD)
+        client = RemoteAttackMateClient(
+            self.SERVER_URL, username=self.USERNAME, password=self.PASSWORD
+        )
         assert client.server_url == self.SERVER_URL
         assert client.username == self.USERNAME
         assert client.password == self.PASSWORD
@@ -81,9 +85,9 @@ class TestRemoteAttackMateClient:
         token = '2345'
         json_data = {'key': 'value'}
         params = {'q': 'search'}
-        kwargs = RemoteAttackMateClient(self.SERVER_URL)._prepare_request_kwargs(
-            token, json_data=json_data, params=params
-        )
+        kwargs = RemoteAttackMateClient(
+            self.SERVER_URL, username=self.USERNAME, password=self.PASSWORD
+        )._prepare_request_kwargs(token, json_data=json_data, params=params)
         assert kwargs['headers'] == {'X-Auth-Token': token}
         assert kwargs['json'] == json_data
         assert kwargs['params'] == params
@@ -93,9 +97,9 @@ class TestRemoteAttackMateClient:
         """Test request preparation for YAML/content payload."""
         token = '12345'
         content_data = 'playbook: []'
-        kwargs = RemoteAttackMateClient(self.SERVER_URL)._prepare_request_kwargs(
-            token, content_data=content_data
-        )
+        kwargs = RemoteAttackMateClient(
+            self.SERVER_URL, username=self.USERNAME, password=self.PASSWORD
+        )._prepare_request_kwargs(token, content_data=content_data)
         assert kwargs['headers'] == {'X-Auth-Token': token, 'Content-Type': 'application/yaml'}
         assert kwargs['content'] == content_data
         assert 'json' not in kwargs
@@ -105,7 +109,7 @@ class TestClientLogin:
 
     SERVER_URL = 'http://api.test'
     USERNAME = 'testuser'
-    PASSWORD = 'testpassword'
+    PASSWORD = SecretStr('testpassword')
     TOKEN = 'test_token_123'
 
     @mock.patch('httpx.Client')
@@ -116,12 +120,14 @@ class TestClientLogin:
         )
         MockClient.return_value.__enter__.return_value.post.return_value = mock_response_instance
 
-        client = RemoteAttackMateClient(self.SERVER_URL, username=self.USERNAME, password=self.PASSWORD)
+        client = RemoteAttackMateClient(
+            self.SERVER_URL, username=self.USERNAME, password=self.PASSWORD
+        )
         token = client._login(self.USERNAME, self.PASSWORD)
 
         assert token == self.TOKEN
-        assert clear_sessions[self.SERVER_URL]['token'] == self.TOKEN
-        assert clear_sessions[self.SERVER_URL]['user'] == self.USERNAME
+        # Session is keyed by (server_url, username)
+        assert clear_sessions[(self.SERVER_URL, self.USERNAME)] == self.TOKEN
 
     @mock.patch('httpx.Client')
     def test_login_401_failure(self, MockClient, caplog, clear_sessions) -> None:
@@ -129,7 +135,9 @@ class TestClientLogin:
         mock_response_instance = mock_response(status_code=401, text='Invalid credentials')
         MockClient.return_value.__enter__.return_value.post.return_value = mock_response_instance
 
-        client = RemoteAttackMateClient(self.SERVER_URL, username=self.USERNAME, password=self.PASSWORD)
+        client = RemoteAttackMateClient(
+            self.SERVER_URL, username=self.USERNAME, password=self.PASSWORD
+        )
         with caplog.at_level(logging.ERROR):
             token = client._login(self.USERNAME, self.PASSWORD)
 
@@ -137,20 +145,50 @@ class TestClientLogin:
         assert not clear_sessions
         assert "Login failed for 'testuser'" in caplog.text
 
+    @mock.patch('httpx.Client')
+    def test_login_different_users_dont_evict_each_other(self, MockClient, clear_sessions):
+        """Test that two users on the same server get independent cache entries."""
+        token_alice = 'token_alice'
+        token_bob = 'token_bob'
+
+        def post_side_effect(url, data):
+            if data['username'] == 'alice':
+                return mock_response(json_data={'access_token': token_alice})
+            return mock_response(json_data={'access_token': token_bob})
+
+        MockClient.return_value.__enter__.return_value.post.side_effect = post_side_effect
+
+        client_alice = RemoteAttackMateClient(
+            self.SERVER_URL, username='alice', password=SecretStr('pw')
+        )
+        client_bob = RemoteAttackMateClient(
+            self.SERVER_URL, username='bob', password=SecretStr('pw')
+        )
+
+        client_alice._login('alice', SecretStr('pw'))
+        client_bob._login('bob', SecretStr('pw'))
+
+        # Both tokens must coexist independently
+        assert clear_sessions[(self.SERVER_URL, 'alice')] == token_alice
+        assert clear_sessions[(self.SERVER_URL, 'bob')] == token_bob
+
 
 class TestClientMakeRequest:
 
     SERVER_URL = 'http://api.test'
     USERNAME = 'testuser'
-    PASSWORD = 'testpassword'
+    PASSWORD = SecretStr('testpassword')
     TOKEN = 'initial_token'
     NEW_TOKEN = 'renewed_token'
 
     @pytest.fixture
     def setup_client(self, clear_sessions) -> RemoteAttackMateClient:
         """Setup client with a pre-cached token to skip login."""
-        clear_sessions[self.SERVER_URL] = {'token': self.TOKEN, 'user': self.USERNAME}
-        return RemoteAttackMateClient(self.SERVER_URL, username=self.USERNAME, password=self.PASSWORD)
+        # Compound key: (server_url, username)
+        clear_sessions[(self.SERVER_URL, self.USERNAME)] = self.TOKEN
+        return RemoteAttackMateClient(
+            self.SERVER_URL, username=self.USERNAME, password=self.PASSWORD
+        )
 
     @mock.patch('httpx.Client')
     def test_make_request_success(self, MockClient, setup_client) -> None:
@@ -160,7 +198,7 @@ class TestClientMakeRequest:
         mock_response_instance = mock_response(json_data=expected_result)
         MockClient.return_value.__enter__.return_value.request.return_value = mock_response_instance
 
-        result = setup_client._make_request(method='GET', endpoint=endpoint)
+        result = setup_client._make_authenticated_request(method='GET', endpoint=endpoint)
 
         assert result == expected_result
         MockClient.return_value.__enter__.return_value.request.assert_called_once()
@@ -173,7 +211,7 @@ class TestClientMakeRequest:
         MockClient.return_value.__enter__.return_value.request.return_value = mock_response_instance
 
         with caplog.at_level(logging.ERROR):
-            result = setup_client._make_request(method='POST', endpoint=endpoint)
+            result = setup_client._make_authenticated_request(method='POST', endpoint=endpoint)
 
         assert result is None
         assert 'API Error (POST http://api.test/action): 500' in caplog.text
@@ -184,15 +222,17 @@ class TestClientExecutionMethods:
 
     SERVER_URL = 'http://api.test'
     USERNAME = 'testuser'
-    PASSWORD = 'testpassword'
+    PASSWORD = SecretStr('testpassword')
     TOKEN = 'exec_token'
 
     @pytest.fixture
     def setup_client(self, clear_sessions):
-        clear_sessions[self.SERVER_URL] = {'token': self.TOKEN, 'user': self.USERNAME}
-        return RemoteAttackMateClient(self.SERVER_URL, username=self.USERNAME, password=self.PASSWORD)
+        clear_sessions[(self.SERVER_URL, self.USERNAME)] = self.TOKEN
+        return RemoteAttackMateClient(
+            self.SERVER_URL, username=self.USERNAME, password=self.PASSWORD
+        )
 
-    @mock.patch.object(RemoteAttackMateClient, '_make_request')
+    @mock.patch.object(RemoteAttackMateClient, '_make_authenticated_request')
     def test_execute_remote_playbook_yaml(self, mock_make_request, setup_client):
         """Test playbook execution with correct request parameters (YAML)."""
         yaml_content = 'commands: mock commands'
@@ -205,19 +245,14 @@ class TestClientExecutionMethods:
             params=None
         )
 
-    @mock.patch.object(RemoteAttackMateClient, '_make_request')
+    @mock.patch.object(RemoteAttackMateClient, '_make_authenticated_request')
     def test_execute_remote_command(self, mock_make_request, setup_client):
         """Test command execution with Pydantic model conversion."""
-        # Mock Pydantic model behavior
-        mock_model = MockCommandModel(
-            {'type': 'shell', 'cmd': 'whoami'}
-        )
+        mock_model = MockCommandModel({'type': 'shell', 'cmd': 'whoami'})
 
         setup_client.execute_remote_command(mock_model, debug=False)
 
-        # model_dump(exclude_none=True) should be called
         expected_body = {'type': 'shell', 'cmd': 'whoami'}
-
         mock_make_request.assert_called_once_with(
             method='POST',
             endpoint='command/execute',
