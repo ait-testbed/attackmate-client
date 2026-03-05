@@ -127,7 +127,7 @@ class RemoteAttackMateClient:
 
         return request_kwargs
 
-    def _make_request(
+    def _make_authenticated_request(
             self,
             method: str,
             endpoint: str,
@@ -142,32 +142,22 @@ class RemoteAttackMateClient:
 
         url = f"{self.server_url}/{endpoint.lstrip('/')}"
         client_method = method.upper()
-        try:
-            request_kwargs = self._prepare_request_kwargs(
-                token=token,
+
+        def _dispatch_request(t: str) -> httpx.Response:
+            kwargs = self._prepare_request_kwargs(
+                token=t,
                 json_data=json_data,
                 content_data=content_data,
                 params=params
             )
-
-            logger.debug(f'Making {method.upper()} request to {url}')
-
+            logger.debug(f'Making {client_method} request to {url}')
             with httpx.Client(verify=self.verify_ssl, timeout=self.timeout_config) as client:
-                response = client.request(
-                    method=client_method,
-                    url=url,
-                    **request_kwargs
-                )
-
+                response = client.request(method=client_method, url=url, **kwargs)
             response.raise_for_status()
-            response_data = response.json()
+            return response
 
-            # Update token if the server provided a renewed one
-            new_token_from_response = response_data.get('current_token')
-            if new_token_from_response and new_token_from_response != token:
-                logger.info(f'Server returned a renewed token for {self.server_url}. Updating client cache.')
-                _active_sessions[self.server_url]['token'] = new_token_from_response
-            return response_data
+        try:
+            return _dispatch_request(token).json()
 
         except httpx.HTTPStatusError as e:
             logger.error(f'API Error ({method} {url}): {e.response.status_code}')
@@ -180,6 +170,15 @@ class RemoteAttackMateClient:
             if e.response.status_code == 401:
                 logger.warning(f'Token expired or invalid for {self.server_url}. Clearing session cache.')
                 _active_sessions.pop(self.server_url, None)
+                if self.username and self.password:
+                    new_token = self._login(self.username, self.password)
+                    if new_token:
+                        try:
+                            return _dispatch_request(new_token).json()
+                        except Exception as retry_e:
+                            logger.error(
+                                f'Retry after re-login failed ({method} {url}): {retry_e}',
+                                exc_info=True)
             return None
         except httpx.RequestError as e:
             logger.error(f'Request Error ({method} {url}): {e}')
@@ -196,7 +195,7 @@ class RemoteAttackMateClient:
     ) -> Optional[Dict[str, Any]]:
         """Executes a playbook by sending its YAML content."""
         params = {'debug': 'true'} if debug else None
-        return self._make_request(
+        return self._make_authenticated_request(
             method='POST',
             endpoint='playbooks/execute/yaml',
             content_data=playbook_yaml_content,
@@ -212,7 +211,7 @@ class RemoteAttackMateClient:
         # handle None values for optional fields (exclude_none=True)
         command_body_dict = command_pydantic_model.model_dump(exclude_none=True)
         params = {'debug': 'true'} if debug else None
-        return self._make_request(
+        return self._make_authenticated_request(
             method='POST',
             endpoint='command/execute',
             json_data=command_body_dict,
