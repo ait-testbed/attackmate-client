@@ -47,6 +47,22 @@
               <p class="caption"><span class="caption-text">Getting Started</span></p>
               <ul class="current">
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">Installation</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#install">Install</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#using-uv-recommended">Using uv (Recommended)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#using-pip">Using pip</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#verify">Verify</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a>
+    </li>
+    </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quick Start</a>
                   </li>
@@ -94,7 +110,34 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                
+                <h1 id="installation">Installation</h1>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Python 3.8 or higher</li>
+<li>Git</li>
+</ul>
+<h2 id="install">Install</h2>
+<h3 id="using-uv-recommended">Using uv (Recommended)</h3>
+<pre><code class="language-bash">git clone https://github.com/ait-testbed/attackmate-client
+cd attackmate-client
+uv sync --dev
+</code></pre>
+<h3 id="using-pip">Using pip</h3>
+<pre><code class="language-bash">git clone https://github.com/ait-testbed/attackmate-client
+cd attackmate-client
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -e .
+</code></pre>
+<h2 id="verify">Verify</h2>
+<pre><code class="language-bash"># With uv
+uv run attackmate-client --help
+
+# With pip (venv activated)
+attackmate-client --help
+</code></pre>
+<h2 id="next-steps">Next Steps</h2>
+<p>Proceed to the <a href="../quickstart/">Quick Start Guide</a> to execute your first playbook.</p>
               
             </div>
           </div><footer>

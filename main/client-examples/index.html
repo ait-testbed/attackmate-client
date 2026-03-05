@@ -66,9 +66,7 @@
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#basic-usage">Basic Usage</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#simple-playbook-execution">Simple Playbook Execution</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#with-self-signed-certificate">With Self-Signed Certificate</a>
+    <li class="toctree-l3"><a class="reference internal" href="#simple-playbook-execution-with-self-signed-certificate">Simple Playbook Execution With Self-Signed Certificate</a>
     </li>
         </ul>
     </li>
@@ -113,14 +111,15 @@
                 <h1 id="api-code-examples">API Code Examples</h1>
 <p>This page provides comprehensive code examples for integrating the <code>RemoteAttackMateClient</code> into your Python applications.</p>
 <h2 id="basic-usage">Basic Usage</h2>
-<h3 id="simple-playbook-execution">Simple Playbook Execution</h3>
+<h3 id="simple-playbook-execution-with-self-signed-certificate">Simple Playbook Execution With Self-Signed Certificate</h3>
 <pre><code class="language-python">from attackmate_client import RemoteAttackMateClient
 
 # Initialize the client
 client = RemoteAttackMateClient(
-    server_url=&quot;https://attackmate.example.com:8445&quot;,
+    server_url=&quot;https://localhost:8445&quot;,
     username=&quot;admin&quot;,
-    password=&quot;mypassword&quot;
+    password=&quot;adminpass&quot;,
+    cacert=&quot;/path/to/self-signed-ca.crt&quot;
 )
 
 # Read and execute playbook
@@ -134,22 +133,6 @@ if result and result.get(&quot;success&quot;):
     print(&quot;✓ Playbook executed successfully!&quot;)
 else:
     print(&quot;✗ Playbook execution failed&quot;)
-</code></pre>
-<h3 id="with-self-signed-certificate">With Self-Signed Certificate</h3>
-<pre><code class="language-python">from attackmate_client import RemoteAttackMateClient
-
-client = RemoteAttackMateClient(
-    server_url=&quot;https://localhost:8445&quot;,
-    username=&quot;admin&quot;,
-    password=&quot;adminpass&quot;,
-    cacert=&quot;/path/to/self-signed-ca.crt&quot;
-)
-
-with open(&quot;test.yaml&quot;, &quot;r&quot;) as f:
-    result = client.execute_remote_playbook_yaml(f.read(), debug=True)
-
-if result:
-    print(f&quot;Message: {result.get('message')}&quot;)
 </code></pre>
 <h2 id="error-handling-patterns">Error Handling Patterns</h2>
 <h3 id="basic-error-handling">Basic Error Handling</h3>

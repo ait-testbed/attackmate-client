@@ -112,17 +112,13 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#_login-internal">_login() (Internal)</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#_make_request-internal">_make_request() (Internal)</a>
+    <li class="toctree-l3"><a class="reference internal" href="#_make_authenticated_request-internal">_make_authenticated_request() (Internal)</a>
     </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#session-management">Session Management</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#how-it-works">How It Works</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#multiple-clients-same-server">Multiple Clients, Same Server</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#different-users-same-server">Different Users, Same Server</a>
     </li>
         </ul>
     </li>
@@ -141,8 +137,6 @@
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#type-hints">Type Hints</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#thread-safety">Thread Safety</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#complete-example">Complete Example</a>
     </li>
@@ -197,11 +191,13 @@
 </ul>
 <h2 id="constructor">Constructor</h2>
 <h3 id="__init__"><code>__init__()</code></h3>
-<pre><code class="language-python">RemoteAttackMateClient(
+<pre><code class="language-python">from pydantic import SecretStr
+
+RemoteAttackMateClient(
     server_url: str,
+    username: str = None,
+    password: SecretStr = None,
     cacert: Optional[str] = None,
-    username: Optional[str] = None,
-    password: Optional[str] = None,
     timeout: float = 60.0
 )
 </code></pre>
@@ -226,25 +222,25 @@
 <td>Base URL of the AttackMate API server (e.g., <code>"https://attackmate.example.com:8445"</code>)</td>
 </tr>
 <tr>
-<td><code>cacert</code></td>
-<td><code>Optional[str]</code></td>
-<td>No</td>
-<td><code>None</code></td>
-<td>Path to CA certificate file for SSL verification. Use for self-signed certificates.</td>
-</tr>
-<tr>
 <td><code>username</code></td>
-<td><code>Optional[str]</code></td>
+<td><code>str</code></td>
 <td>No</td>
 <td><code>None</code></td>
 <td>Username for authentication. Required if making authenticated requests.</td>
 </tr>
 <tr>
 <td><code>password</code></td>
-<td><code>Optional[str]</code></td>
+<td><code>SecretStr</code></td>
 <td>No</td>
 <td><code>None</code></td>
 <td>Password for authentication. Required if making authenticated requests.</td>
+</tr>
+<tr>
+<td><code>cacert</code></td>
+<td><code>Optional[str]</code></td>
+<td>No</td>
+<td><code>None</code></td>
+<td>Path to CA certificate file for SSL verification. Use for self-signed certificates.</td>
 </tr>
 <tr>
 <td><code>timeout</code></td>
@@ -256,10 +252,11 @@
 </tbody>
 </table>
 <h4 id="example">Example</h4>
-<pre><code class="language-python">client = RemoteAttackMateClient(
+<pre><code class="language-python">from pydantic import SecretStr
+client = RemoteAttackMateClient(
     server_url=&quot;https://attackmate.example.com:8445&quot;,
     username=&quot;admin&quot;,
-    password=&quot;secure_password&quot;,
+    password=SecretStr(&quot;secure_password&quot;),
     cacert=&quot;/path/to/ca-cert.pem&quot;,
     timeout=120.0  # 2 minutes
 )
@@ -385,15 +382,11 @@ else:
 <li><strong>On failure</strong>: <code>None</code></li>
 </ul>
 <h4 id="example_2">Example</h4>
-<pre><code class="language-python">from pydantic import BaseModel
+<pre><code class="language-python">from attacmkate import DebugCommand
 
-class ShellCommand(BaseModel):
-    command: str
-    args: list[str]
-
-command = ShellCommand(
-    command=&quot;echo&quot;,
-    args=[&quot;Hello, AttackMate!&quot;]
+command = DebugCommand(
+    type=&quot;debug&quot;
+    cmd=&quot;hello world&quot;,
 )
 
 result = client.execute_remote_command(command, debug=False)
@@ -410,59 +403,20 @@ if result:
 <p>Retrieves or creates an authentication token. Called automatically by request methods.</p>
 <h3 id="_login-internal"><code>_login()</code> (Internal)</h3>
 <p>Performs authentication and stores the token. Called automatically when needed.</p>
-<h3 id="_make_request-internal"><code>_make_request()</code> (Internal)</h3>
+<h3 id="_make_authenticated_request-internal"><code>_make_authenticated_request()</code> (Internal)</h3>
 <p>Generic HTTP request handler. Manages token renewal and error handling.</p>
 <hr />
 <h2 id="session-management">Session Management</h2>
 <p>The client maintains session state globally per server URL:</p>
 <pre><code class="language-python"># Token storage is managed automatically
-_active_sessions: Dict[str, Dict[str, str]] = {}
+_active_sessions: Dict[Tuple[str, str], str] = {}
 </code></pre>
 <h3 id="how-it-works">How It Works</h3>
 <ol>
 <li><strong>First request</strong>: Client authenticates and stores token</li>
 <li><strong>Subsequent requests</strong>: Client reuses stored token</li>
-<li><strong>Token expiration</strong>: Server returns renewed token, client updates cache</li>
 <li><strong>401 Unauthorized</strong>: Client clears cached token, re-authenticates on next request</li>
 </ol>
-<h3 id="multiple-clients-same-server">Multiple Clients, Same Server</h3>
-<pre><code class="language-python"># Both clients share the same token for this server
-client1 = RemoteAttackMateClient(
-    server_url=&quot;https://attackmate.example.com:8445&quot;,
-    username=&quot;user1&quot;,
-    password=&quot;pass1&quot;
-)
-
-client2 = RemoteAttackMateClient(
-    server_url=&quot;https://attackmate.example.com:8445&quot;,
-    username=&quot;user1&quot;,  # Same user
-    password=&quot;pass1&quot;
-)
-
-# First client authenticates
-result1 = client1.execute_remote_playbook_yaml(yaml_content)
-
-# Second client reuses the token (no re-authentication needed)
-result2 = client2.execute_remote_playbook_yaml(yaml_content)
-</code></pre>
-<h3 id="different-users-same-server">Different Users, Same Server</h3>
-<pre><code class="language-python"># Different users get different tokens
-admin_client = RemoteAttackMateClient(
-    server_url=&quot;https://attackmate.example.com:8445&quot;,
-    username=&quot;admin&quot;,
-    password=&quot;admin_pass&quot;
-)
-
-user_client = RemoteAttackMateClient(
-    server_url=&quot;https://attackmate.example.com:8445&quot;,
-    username=&quot;regular_user&quot;,
-    password=&quot;user_pass&quot;
-)
-
-# Each client gets its own token
-admin_result = admin_client.execute_remote_playbook_yaml(yaml_content)
-user_result = user_client.execute_remote_playbook_yaml(yaml_content)
-</code></pre>
 <hr />
 <h2 id="error-handling">Error Handling</h2>
 <p>The client handles errors gracefully without raising exceptions:</p>
@@ -556,13 +510,6 @@ if result:
     success: bool = result.get(&quot;success&quot;, False)
     message: str = result.get(&quot;message&quot;, &quot;&quot;)
 </code></pre>
-<hr />
-<h2 id="thread-safety">Thread Safety</h2>
-<div class="admonition warning">
-<p class="admonition-title">Not Thread-Safe</p>
-<p>The global <code>_active_sessions</code> dictionary is <strong>not thread-safe</strong>. If using the client in a multi-threaded application, implement your own locking mechanism or create separate client instances per thread.</p>
-</div>
-<hr />
 <h2 id="complete-example">Complete Example</h2>
 <pre><code class="language-python">import logging
 from attackmate_client import RemoteAttackMateClient

@@ -54,6 +54,32 @@
               <p class="caption"><span class="caption-text">CLI Usage</span></p>
               <ul class="current">
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">Overview</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#basic-usage">Basic Usage</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#required-options">Required Options</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#optional-parameters">Optional Parameters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#basic-execution">Basic Execution</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#complete-example">Complete Example</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#with-uv">With uv</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#environment-variables">Environment Variables</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#exit-codes">Exit Codes</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#output-format">Output Format</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a>
+    </li>
+    </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cli-examples/">Examples</a>
                   </li>
@@ -94,7 +120,123 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                
+                <h1 id="cli-overview">CLI Overview</h1>
+<p>The <code>attackmate-client</code> command executes playbooks on a remote AttackMate server.</p>
+<h2 id="basic-usage">Basic Usage</h2>
+<pre><code class="language-bash">attackmate-client PLAYBOOK_FILE [OPTIONS]
+</code></pre>
+<h2 id="required-options">Required Options</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PLAYBOOK_FILE</code></td>
+<td>Path to your playbook YAML file</td>
+</tr>
+<tr>
+<td><code>--username</code></td>
+<td>API username for authentication</td>
+</tr>
+<tr>
+<td><code>--password</code></td>
+<td>API password for authentication</td>
+</tr>
+</tbody>
+</table>
+<h2 id="optional-parameters">Optional Parameters</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--server-url</code></td>
+<td><code>https://localhost:8445</code></td>
+<td>Base URL of the AttackMate API server</td>
+</tr>
+<tr>
+<td><code>--cacert</code></td>
+<td>-</td>
+<td>Path to CA certificate for self-signed SSL</td>
+</tr>
+<tr>
+<td><code>--debug</code></td>
+<td>-</td>
+<td>Enable server-side debug logging</td>
+</tr>
+</tbody>
+</table>
+<h2 id="examples">Examples</h2>
+<h3 id="basic-execution">Basic Execution</h3>
+<pre><code class="language-bash">attackmate-client playbook.yaml \
+  --username admin \
+  --password mypass
+</code></pre>
+<h3 id="complete-example">Complete Example</h3>
+<pre><code class="language-bash">attackmate-client playbook.yaml \
+  --server-url https://attackmate.example.com:8445 \
+  --username admin \
+  --password mypass \
+  --cacert /etc/ssl/certs/attackmate-ca.pem \
+  --debug
+</code></pre>
+<h3 id="with-uv">With uv</h3>
+<pre><code class="language-bash">uv run attackmate-client playbook.yaml \
+  --username admin \
+  --password mypass
+</code></pre>
+<h2 id="environment-variables">Environment Variables</h2>
+<p>Use environment variables to avoid typing credentials:</p>
+<pre><code class="language-bash">export ATTACKMATE_USER=&quot;admin&quot;
+export ATTACKMATE_PASS=&quot;mypass&quot;
+export ATTACKMATE_SERVER=&quot;https://attackmate.example.com:8445&quot;
+
+attackmate-client playbook.yaml \
+  --username &quot;$ATTACKMATE_USER&quot; \
+  --password &quot;$ATTACKMATE_PASS&quot; \
+  --server-url &quot;$ATTACKMATE_SERVER&quot;
+</code></pre>
+<h2 id="exit-codes">Exit Codes</h2>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>Success</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>Failure (auth, network, or playbook error)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="output-format">Output Format</h2>
+<pre><code>--- Playbook Execution (YAML: playbook.yaml) Result ---
+Success: True
+Message: Playbook executed successfully
+
+--- Final Variable Store State ---
+variable1: value1
+variable2: value2
+</code></pre>
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li>See <a href="examples.md">CLI Examples</a> for practical use cases</li>
+</ul>
               
             </div>
           </div><footer>
