@@ -1,7 +1,5 @@
 # Quick Start
 
-Get started with AttackMate Client in minutes.
-
 ## Prerequisites
 
 1. [Installed AttackMate Client](installation.md)
@@ -11,16 +9,7 @@ Get started with AttackMate Client in minutes.
 
 ## Execute Your First Playbook
 
-### Basic Example
-
-```bash
-uv run attackmate-client playbook.yaml \
-  --server-url https://attackmate.example.com:8445 \
-  --username admin \
-  --password mypassword
-```
-
-### With Self-Signed Certificate
+### Basic Example with self-Signed Certificate
 
 ```bash
 uv run attackmate-client playbook.yaml \
@@ -37,6 +26,7 @@ uv run attackmate-client playbook.yaml \
   --server-url https://localhost:8445 \
   --username admin \
   --password adminpass \
+  --cacert /path/to/server-ca.crt \
   --debug
 ```
 
@@ -62,6 +52,6 @@ target_ip: 192.168.1.100
 
 ## Next Steps
 
-- [CLI Usage Guide](./cli-overview.md) - Learn all CLI options
-- [CLI Examples](./cli-examples.md) - See practical examples
-- [Python API](./client.md) - Use in your scripts
+- [CLI Usage Guide](./cli-overview.md) -  CLI options
+- [CLI Examples](./cli-examples.md) - practical examples
+- [Python API](./client.md) - Use in scripts
