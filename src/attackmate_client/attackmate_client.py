@@ -160,9 +160,9 @@ class RemoteAttackMateClient:
         url = f"{self.server_url}/{endpoint.lstrip('/')}"
         client_method = method.upper()
 
-        def _dispatch_request(t: str) -> httpx.Response:
+        def _dispatch_request(explicit_token: str) -> httpx.Response:
             kwargs = self._prepare_request_kwargs(
-                token=t,
+                token=explicit_token,
                 json_data=json_data,
                 content_data=content_data,
                 params=params
@@ -174,7 +174,7 @@ class RemoteAttackMateClient:
             return response
 
         try:
-            return _dispatch_request(token).json()
+            return _dispatch_request(explicit_token=token).json()
 
         except httpx.HTTPStatusError as e:
             logger.error(f'API Error ({method} {url}): {e.response.status_code}')
@@ -192,7 +192,7 @@ class RemoteAttackMateClient:
                     new_token = self._login(self.username, self.password)
                     if new_token:
                         try:
-                            return _dispatch_request(new_token).json()
+                            return _dispatch_request(explicit_token=new_token).json()
                         except Exception as retry_e:
                             logger.error(
                                 f'Retry after re-login failed ({method} {url}): {retry_e}',
