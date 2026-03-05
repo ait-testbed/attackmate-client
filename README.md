@@ -75,9 +75,9 @@ The main client class for interacting with the AttackMate API.
 ```python
 RemoteAttackMateClient(
     server_url: str,
+    username: str,
+    password: SecretStr,
     cacert: Optional[str] = None,
-    username: Optional[str] = None,
-    password: Optional[str] = None,
     timeout: float = 60.0
 )
 ```
