@@ -168,7 +168,8 @@ logging.basicConfig(level=logging.INFO)
 client = RemoteAttackMateClient(
     server_url="https://attackmate.example.com:8445",
     username="admin",
-    password="mypassword"
+    password="mypassword",
+    cacert="/path/to/self-signed-ca.crt"
 )
 
 try:
@@ -205,6 +206,7 @@ client = RemoteAttackMateClient(
     server_url="https://attackmate.example.com:8445",
     username="admin",
     password="mypassword",
+    cacert="/path/to/self-signed-ca.crt"
     timeout=120.0  # Longer timeout for complex playbooks
 )
 
@@ -228,26 +230,6 @@ print("\n=== Execution Summary ===")
 for playbook, success in results.items():
     status = "✓ SUCCESS" if success else "✗ FAILED"
     print(f"{status}: {playbook}")
-```
-
-#### Example 4: Using with Custom SSL Certificate
-
-```python
-from attackmate_client import RemoteAttackMateClient
-
-# For self-signed certificates
-client = RemoteAttackMateClient(
-    server_url="https://localhost:8445",
-    username="testuser",
-    password="testpass",
-    cacert="/path/to/self-signed-ca.crt"  # Custom CA certificate
-)
-
-with open("test_playbook.yaml", "r") as f:
-    result = client.execute_remote_playbook_yaml(f.read())
-
-if result:
-    print(f"Execution completed: {result.get('message')}")
 ```
 
 ### Session Management
