@@ -28,7 +28,7 @@ For more information about the AttackMate framework, please visit:
 
     Get started by installing the AttackMate Client
 
-    [Install now](getting-started/installation.md)
+    [Install now](./installation.md)
 
 
  **Quick Start**
@@ -37,7 +37,7 @@ For more information about the AttackMate framework, please visit:
 
     Execute your first playbook
 
-    [Quick start guide](getting-started/quickstart.md)
+    [Quick start guide](./quickstart.md)
 
 
  **CLI Usage**
@@ -46,7 +46,7 @@ For more information about the AttackMate framework, please visit:
 
     Learn how to use the command-line interface
 
-    [CLI documentation](cli/overview.md)
+    [CLI documentation](./cli-overview.md)
 
 
  **API Reference**
@@ -55,7 +55,7 @@ For more information about the AttackMate framework, please visit:
 
     Integrate the client into your Python projects
 
-    [API reference](api/client.md)
+    [API reference](./client.md)
 
 
 ## Project Information
