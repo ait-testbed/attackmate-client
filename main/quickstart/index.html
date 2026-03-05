@@ -54,9 +54,7 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#execute-your-first-playbook">Execute Your First Playbook</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#basic-example">Basic Example</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#with-self-signed-certificate">With Self-Signed Certificate</a>
+    <li class="toctree-l3"><a class="reference internal" href="#basic-example-with-self-signed-certificate">Basic Example with self-Signed Certificate</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#with-debug-mode">With Debug Mode</a>
     </li>
@@ -115,7 +113,6 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="quick-start">Quick Start</h1>
-<p>Get started with AttackMate Client in minutes.</p>
 <h2 id="prerequisites">Prerequisites</h2>
 <ol>
 <li><a href="../installation/">Installed AttackMate Client</a></li>
@@ -124,13 +121,7 @@
 <li>A playbook YAML file</li>
 </ol>
 <h2 id="execute-your-first-playbook">Execute Your First Playbook</h2>
-<h3 id="basic-example">Basic Example</h3>
-<pre><code class="language-bash">uv run attackmate-client playbook.yaml \
-  --server-url https://attackmate.example.com:8445 \
-  --username admin \
-  --password mypassword
-</code></pre>
-<h3 id="with-self-signed-certificate">With Self-Signed Certificate</h3>
+<h3 id="basic-example-with-self-signed-certificate">Basic Example with self-Signed Certificate</h3>
 <pre><code class="language-bash">uv run attackmate-client playbook.yaml \
   --server-url https://localhost:8445 \
   --username admin \
@@ -142,6 +133,7 @@
   --server-url https://localhost:8445 \
   --username admin \
   --password adminpass \
+  --cacert /path/to/server-ca.crt \
   --debug
 </code></pre>
 <h2 id="successful-output">Successful Output</h2>
@@ -181,9 +173,9 @@ target_ip: 192.168.1.100
 </table>
 <h2 id="next-steps">Next Steps</h2>
 <ul>
-<li><a href="../cli-overview/">CLI Usage Guide</a> - Learn all CLI options</li>
-<li><a href="../cli-examples/">CLI Examples</a> - See practical examples</li>
-<li><a href="../client/">Python API</a> - Use in your scripts</li>
+<li><a href="../cli-overview/">CLI Usage Guide</a> -  CLI options</li>
+<li><a href="../cli-examples/">CLI Examples</a> - practical examples</li>
+<li><a href="../client/">Python API</a> - Use in scripts</li>
 </ul>
               
             </div>
