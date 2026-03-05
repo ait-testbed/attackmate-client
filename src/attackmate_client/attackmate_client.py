@@ -5,6 +5,7 @@ import sys
 import json
 import threading
 from typing import Dict, Any, Optional, Tuple
+from pydantic import SecretStr
 
 import httpx
 import yaml
@@ -28,7 +29,7 @@ class RemoteAttackMateClient:
         server_url: str,
         cacert: Optional[str] = None,
         username: Optional[str] = None,
-        password: Optional[str] = None,
+        password: Optional[SecretStr] = None,
         timeout: float = DEFAULT_TIMEOUT,
     ):
         self.server_url = server_url.rstrip('/')
@@ -68,14 +69,18 @@ class RemoteAttackMateClient:
             return self._login(self.username, self.password)
         return None
 
-    def _login(self, username: str, password: str) -> Optional[str]:
+    def _login(self, username: str, password: SecretStr) -> Optional[str]:
         """Internal login method, stores token."""
         login_url = f'{self.server_url}/login'
         logger.info(f"Attempting login to {login_url} for user '{username}'...")
         try:
             with httpx.Client(verify=self.verify_ssl, timeout=self.timeout_config) as client:
                 # The API expects the credentials as form data
-                response = client.post(login_url, data={'username': username, 'password': password})
+                response = client.post(
+                    login_url,
+                    data={
+                        'username': username,
+                        'password': password.get_secret_value()})
 
             response.raise_for_status()
             data = response.json()
