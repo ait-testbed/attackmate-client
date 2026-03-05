@@ -84,9 +84,9 @@ RemoteAttackMateClient(
 
 **Parameters:**
 - `server_url` (str): Base URL of the AttackMate server (e.g., "https://attackmate.example.com:8445")
+- `username` (str): Username for authentication
+- `password` (SecretStr): Password for authentication
 - `cacert` (Optional[str]): Path to CA certificate file for SSL verification
-- `username` (Optional[str]): Username for authentication
-- `password` (Optional[str]): Password for authentication
 - `timeout` (float): Request timeout in seconds (default: 60.0)
 
 #### Available Methods
