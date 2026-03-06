@@ -214,13 +214,31 @@
 </tbody>
 </table>
 <h2 id="output-format">Output Format</h2>
-<pre><code>--- Playbook Execution (YAML: playbook.yaml) Result ---
+<pre><code>--- Playbook Execution (YAML: playbook.yml) Result ---
 Success: True
 Message: Playbook execution finished.
 
+--- Playbook Execution (YAML: playbook.yml) Logs ---
+ Attackmate Log:
+2026-03-06 10:55:03 INFO - Delay before commands: 0 seconds
+2026-03-06 10:55:03 DEBUG - Template-Command: 'whoami'
+2026-03-06 10:55:03 INFO - Executing Shell-Command: 'whoami'
+2026-03-06 10:55:03 DEBUG - Running non interactive command
+2026-03-06 10:55:03 DEBUG - Closing popen process
+2026-03-06 10:55:03 DEBUG - loop_if does not match
+2026-03-06 10:55:03 DEBUG - loop_if_not does not match
+2026-03-06 10:55:03 WARNING - Cleaning up session stores
+2026-03-06 10:55:03 WARNING - Cleaning up session stores
+Output Log:
+2026-03-06 10:55:03 INFO - Command: whoami
+ubuntu
+
+Json Log:
+{&quot;start-datetime&quot;: &quot;2026-03-06T10:55:03.759623&quot;, &quot;type&quot;: &quot;shell&quot;, &quot;cmd&quot;: &quot;whoami&quot;, &quot;parameters&quot;: {&quot;only_if&quot;: null, &quot;error_if&quot;: null, &quot;error_if_not&quot;: null, &quot;loop_if&quot;: null, &quot;loop_if_not&quot;: null, &quot;loop_count&quot;: &quot;3&quot;, &quot;exit_on_error&quot;: true, &quot;save&quot;: null, &quot;background&quot;: false, &quot;kill_on_exit&quot;: true, &quot;metadata&quot;: null, &quot;interactive&quot;: false, &quot;creates_session&quot;: null, &quot;session&quot;: null, &quot;command_timeout&quot;: &quot;10&quot;, &quot;read&quot;: true, &quot;command_shell&quot;: &quot;/bin/sh&quot;, &quot;bin&quot;: false}}
+
 --- Final Variable Store State ---
-variable1: value1
-variable2: value2
+RESULT_RETURNCODE: '0'
+RESULT_STDOUT: 'ubuntu'
 </code></pre>
 <h2 id="next-steps">Next Steps</h2>
 <ul>
