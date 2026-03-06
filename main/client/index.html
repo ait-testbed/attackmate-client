@@ -72,8 +72,6 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#example">Example</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#raises">Raises</a>
-    </li>
         </ul>
     </li>
         </ul>
@@ -88,7 +86,7 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#example_1">Example</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#raises_1">Raises</a>
+    <li class="toctree-l4"><a class="reference internal" href="#raises">Raises</a>
     </li>
         </ul>
     </li>
@@ -100,7 +98,7 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#example_2">Example</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#raises_2">Raises</a>
+    <li class="toctree-l4"><a class="reference internal" href="#raises_1">Raises</a>
     </li>
         </ul>
     </li>
@@ -126,25 +124,15 @@
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#common-scenarios">Common Scenarios</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#checking-for-errors">Checking for Errors</a>
-    </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#logging">Logging</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#log-levels">Log Levels</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#type-hints">Type Hints</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#complete-example">Complete Example</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a>
-    </li>
     </ul>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../client-examples/">Code Examples</a>
+                  <li class="toctree-l1"><a class="" href="../client-examples.md">Code Examples</a>
                   </li>
               </ul>
               <ul>
@@ -191,12 +179,11 @@
 </ul>
 <h2 id="constructor">Constructor</h2>
 <h3 id="__init__"><code>__init__()</code></h3>
-<pre><code class="language-python">from pydantic import SecretStr
-
+<pre><code class="language-python">
 RemoteAttackMateClient(
     server_url: str,
-    username: str = None,
-    password: SecretStr = None,
+    username: str,
+    password: str,
     cacert: Optional[str] = None,
     timeout: float = 60.0
 )
@@ -226,21 +213,21 @@ RemoteAttackMateClient(
 <td><code>str</code></td>
 <td>No</td>
 <td><code>None</code></td>
-<td>Username for authentication. Required if making authenticated requests.</td>
+<td>Username for authentication</td>
 </tr>
 <tr>
 <td><code>password</code></td>
 <td><code>SecretStr</code></td>
 <td>No</td>
 <td><code>None</code></td>
-<td>Password for authentication. Required if making authenticated requests.</td>
+<td>Password for authentication</td>
 </tr>
 <tr>
 <td><code>cacert</code></td>
 <td><code>Optional[str]</code></td>
 <td>No</td>
 <td><code>None</code></td>
-<td>Path to CA certificate file for SSL verification. Use for self-signed certificates.</td>
+<td>Path to CA certificate file for SSL verification</td>
 </tr>
 <tr>
 <td><code>timeout</code></td>
@@ -252,18 +239,14 @@ RemoteAttackMateClient(
 </tbody>
 </table>
 <h4 id="example">Example</h4>
-<pre><code class="language-python">from pydantic import SecretStr
-client = RemoteAttackMateClient(
+<pre><code class="language-python">client = RemoteAttackMateClient(
     server_url=&quot;https://attackmate.example.com:8445&quot;,
     username=&quot;admin&quot;,
-    password=SecretStr(&quot;secure_password&quot;),
+    password=&quot;secure_password&quot;,
     cacert=&quot;/path/to/ca-cert.pem&quot;,
     timeout=120.0  # 2 minutes
 )
 </code></pre>
-<h4 id="raises">Raises</h4>
-<p>No exceptions are raised during initialization. Connection and authentication errors occur during method calls.</p>
-<hr />
 <h2 id="methods">Methods</h2>
 <h3 id="execute_remote_playbook_yaml"><code>execute_remote_playbook_yaml()</code></h3>
 <p>Executes a playbook by sending its YAML content to the remote server.</p>
@@ -311,9 +294,7 @@ client = RemoteAttackMateClient(
       "message": str,            # Status or error message
       "final_state": {           # Final execution state
           "variables": dict,     # Variable store after execution
-          # ... other state fields
       },
-      "current_token": str       # Renewed authentication token (optional)
   }</code></p>
 </li>
 <li>
@@ -336,7 +317,7 @@ if result and result.get(&quot;success&quot;):
 else:
     print(&quot;Playbook execution failed&quot;)
 </code></pre>
-<h4 id="raises_1">Raises</h4>
+<h4 id="raises">Raises</h4>
 <p>Does not raise exceptions. Returns <code>None</code> on errors. Check logs for details.</p>
 <hr />
 <h3 id="execute_remote_command"><code>execute_remote_command()</code></h3>
@@ -394,7 +375,7 @@ result = client.execute_remote_command(command, debug=False)
 if result:
     print(f&quot;Command result: {result.get('message')}&quot;)
 </code></pre>
-<h4 id="raises_2">Raises</h4>
+<h4 id="raises_1">Raises</h4>
 <p>Does not raise exceptions. Returns <code>None</code> on errors.</p>
 <hr />
 <h2 id="properties-and-internal-methods">Properties and Internal Methods</h2>
@@ -402,9 +383,9 @@ if result:
 <h3 id="_get_session_token-internal"><code>_get_session_token()</code> (Internal)</h3>
 <p>Retrieves or creates an authentication token. Called automatically by request methods.</p>
 <h3 id="_login-internal"><code>_login()</code> (Internal)</h3>
-<p>Performs authentication and stores the token. Called automatically when needed.</p>
+<p>Performs authentication and stores the token.</p>
 <h3 id="_make_authenticated_request-internal"><code>_make_authenticated_request()</code> (Internal)</h3>
-<p>Generic HTTP request handler. Manages token renewal and error handling.</p>
+<p>HTTP request handler. Manages token renewal and error handling.</p>
 <hr />
 <h2 id="session-management">Session Management</h2>
 <p>The client maintains session state globally per server URL:</p>
@@ -462,20 +443,6 @@ _active_sessions: Dict[Tuple[str, str], str] = {}
 </tr>
 </tbody>
 </table>
-<h3 id="checking-for-errors">Checking for Errors</h3>
-<pre><code class="language-python">result = client.execute_remote_playbook_yaml(yaml_content)
-
-if result is None:
-    print(&quot;ERROR: Request failed - check logs&quot;)
-    exit(1)
-
-if not result.get(&quot;success&quot;):
-    print(f&quot;ERROR: Playbook failed - {result.get('message')}&quot;)
-    exit(1)
-
-print(&quot;Success!&quot;)
-</code></pre>
-<hr />
 <h2 id="logging">Logging</h2>
 <p>The client uses Python's <code>logging</code> module. Configure logging to see detailed information:</p>
 <pre><code class="language-python">import logging
@@ -488,27 +455,6 @@ logging.basicConfig(
 
 # Now client operations will be logged
 client = RemoteAttackMateClient(...)
-</code></pre>
-<h3 id="log-levels">Log Levels</h3>
-<ul>
-<li><strong>DEBUG</strong>: HTTP requests, token management, detailed flow</li>
-<li><strong>INFO</strong>: Authentication success, token renewal</li>
-<li><strong>WARNING</strong>: Token expiration, retryable issues</li>
-<li><strong>ERROR</strong>: Request failures, authentication errors</li>
-</ul>
-<hr />
-<h2 id="type-hints">Type Hints</h2>
-<p>The client is fully type-hinted for IDE support:</p>
-<pre><code class="language-python">from typing import Dict, Any, Optional
-
-result: Optional[Dict[str, Any]] = client.execute_remote_playbook_yaml(
-    playbook_yaml_content=yaml_str,
-    debug=False
-)
-
-if result:
-    success: bool = result.get(&quot;success&quot;, False)
-    message: str = result.get(&quot;message&quot;, &quot;&quot;)
 </code></pre>
 <h2 id="complete-example">Complete Example</h2>
 <pre><code class="language-python">import logging
@@ -527,7 +473,7 @@ client = RemoteAttackMateClient(
 )
 
 # Read playbook
-with open(&quot;security_scan.yaml&quot;, &quot;r&quot;) as f:
+with open(&quot;playbook.yaml&quot;, &quot;r&quot;) as f:
     playbook_yaml = f.read()
 
 # Execute playbook
@@ -542,7 +488,7 @@ if not result:
     exit(1)
 
 if result.get(&quot;success&quot;):
-    print(f&quot;✓ Success: {result.get('message')}&quot;)
+    print(f&quot;Success: {result.get('message')}&quot;)
 
     # Access final state
     final_state = result.get(&quot;final_state&quot;, {})
@@ -552,20 +498,15 @@ if result.get(&quot;success&quot;):
     for key, value in variables.items():
         print(f&quot;  {key}: {value}&quot;)
 else:
-    print(f&quot;✗ Failed: {result.get('message')}&quot;)
+    print(f&quot;Failed: {result.get('message')}&quot;)
     exit(1)
 </code></pre>
-<hr />
-<h2 id="next-steps">Next Steps</h2>
-<ul>
-<li>See <a href="../client-examples/">Code Examples</a> for practical integration patterns</li>
-</ul>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
         <a href="../cli-overview/" class="btn btn-neutral float-left" title="Overview"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../client-examples/" class="btn btn-neutral float-right" title="Code Examples">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../license/" class="btn btn-neutral float-right" title="License">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -595,7 +536,7 @@ else:
       <span><a href="../cli-overview/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../client-examples/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../license/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
