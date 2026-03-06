@@ -12,60 +12,50 @@ attackmate-client PLAYBOOK_FILE [OPTIONS]
 
 | Option | Description |
 |--------|-------------|
-| `PLAYBOOK_FILE` | Path to your playbook YAML file |
+| `PLAYBOOK_FILE` | Path to your attackmate playbook YAML file |
 | `--username` | API username for authentication |
 | `--password` | API password for authentication |
+| `--cacert` | Path to CA certificate for self-signed SSL |
 
 ## Optional Parameters
 
 | Option | Default | Description |
 |--------|---------|-------------|
 | `--server-url` | `https://localhost:8445` | Base URL of the AttackMate API server |
-| `--cacert` | - | Path to CA certificate for self-signed SSL |
-| `--debug` | - | Enable server-side debug logging |
+| `--debug` | - | False |
 
 ## Examples
 
-### Basic Execution
-
-```bash
-attackmate-client playbook.yaml \
-  --username admin \
-  --password mypass
-```
-
-### Complete Example
+Execute an attackmate playbook on a remote server (self signed certificate):
 
 ```bash
 attackmate-client playbook.yaml \
   --server-url https://attackmate.example.com:8445 \
   --username admin \
   --password mypass \
-  --cacert /etc/ssl/certs/attackmate-ca.pem \
-  --debug
+  --cacert /etc/ssl/certs/attackmate-ca.pem
 ```
 
 ### With uv
 
 ```bash
 uv run attackmate-client playbook.yaml \
+  --server-url https://attackmate.example.com:8445 \
   --username admin \
-  --password mypass
+  --password mypass \
+  --cacert /etc/ssl/certs/attackmate-ca.pem
 ```
+### Debug Mode
 
-## Environment Variables
-
-Use environment variables to avoid typing credentials:
+Enable debug logging (on the server):
 
 ```bash
-export ATTACKMATE_USER="admin"
-export ATTACKMATE_PASS="mypass"
-export ATTACKMATE_SERVER="https://attackmate.example.com:8445"
-
-attackmate-client playbook.yaml \
-  --username "$ATTACKMATE_USER" \
-  --password "$ATTACKMATE_PASS" \
-  --server-url "$ATTACKMATE_SERVER"
+uv run attackmate-client playbook.yaml \
+  --server-url https://attackmate.example.com:8445 \
+  --username admin \
+  --password adminpass \
+  --cacert /etc/ssl/certs/attackmate-ca.crt \
+  --debug
 ```
 
 ## Exit Codes
@@ -80,7 +70,7 @@ attackmate-client playbook.yaml \
 ```
 --- Playbook Execution (YAML: playbook.yaml) Result ---
 Success: True
-Message: Playbook executed successfully
+Message: Playbook execution finished.
 
 --- Final Variable Store State ---
 variable1: value1
@@ -89,4 +79,4 @@ variable2: value2
 
 ## Next Steps
 
-- See [CLI Examples](examples.md) for practical use cases
+- Learn about the [Python API](./client.md) for programmatic access

@@ -19,26 +19,22 @@ uv run attackmate-client playbook.yaml \
   --cacert /path/to/server-ca.crt
 ```
 
-### With Debug Mode
-
-```bash
-uv run attackmate-client playbook.yaml \
-  --server-url https://localhost:8445 \
-  --username admin \
-  --password adminpass \
-  --cacert /path/to/server-ca.crt \
-  --debug
+minimal content for playbook.yml:
+```yaml
+commands:
+  - type: shell
+    cmd: whoami
 ```
-
 ## Successful Output
 
 ```
 --- Playbook Execution (YAML: playbook.yaml) Result ---
 Success: True
-Message: Playbook executed successfully
+Message: Playbook execution finished
 
 --- Final Variable Store State ---
-target_ip: 192.168.1.100
+RESULT_RETURNCODE: '0'
+RESULT_STDOUT:  'ubuntu'
 ```
 
 ## Common Issues
@@ -53,5 +49,4 @@ target_ip: 192.168.1.100
 ## Next Steps
 
 - [CLI Usage Guide](./cli-overview.md) -  CLI options
-- [CLI Examples](./cli-examples.md) - practical examples
 - [Python API](./client.md) - Use in scripts
