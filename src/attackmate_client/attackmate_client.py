@@ -3,7 +3,7 @@ import logging
 import os
 import threading
 from typing import Any, Dict, Optional, Tuple
-
+from pydantic import BaseModel
 import httpx
 from pydantic import SecretStr
 
@@ -228,3 +228,8 @@ class RemoteAttackMateClient:
             json_data=command_body_dict,
             params=params,
         )
+
+
+class RemoteCommand(BaseModel):
+    model_config = {'extra': 'allow'}
+    type: str
