@@ -1,7 +1,7 @@
 # AttackMate Playbook CLI Client
 
 This is a command-line client for interacting with the AttackMate API server for remotely executing playbooks.
-[Client Documentation[(https://ait-testbed.github.io/attackmate-client/latest/) on github pages.
+[Client Documentation](https://ait-testbed.github.io/attackmate-client/latest/) on github pages.
 
 **AttackMate** is a framework for automated security testing and attack simulation. For more information about the AttackMate framework, please visit the [main AttackMate repository](https://github.com/ait-testbed/attackmate) and the [ AttackMate api  server](https://github.com/ait-testbed/attackmate-api-server)
 
@@ -79,7 +79,7 @@ RemoteAttackMateClient(
     username: str,
     password: SecretStr,
     cacert: Optional[str] = None,
-    timeout: float = 60.0
+    timeout: Optional[float] = 60.0
 )
 ```
 
@@ -88,7 +88,7 @@ RemoteAttackMateClient(
 - `username` (str): Username for authentication
 - `password` (SecretStr): Password for authentication
 - `cacert` (Optional[str]): Path to CA certificate file for SSL verification
-- `timeout` (float): Request timeout in seconds (default: 60.0)
+- `timeout` (Optional[float]): Request timeout in seconds (default: 60.0)
 
 #### Available Methods
 
@@ -126,15 +126,24 @@ Executes a single command using a Pydantic model.
 ### Code Examples
 
 #### Example 1: Basic Playbook Execution
+content of playbook.yml:
+```yaml
+commands:
+  - type: shell
+    cmd: whoami
+```
+
 
 ```python
 from attackmate_client import RemoteAttackMateClient
+from pydantic import SecretStr
+import yaml
 
 # Initialize the client
 client = RemoteAttackMateClient(
     server_url="https://attackmate.example.com:8445",
     username="admin",
-    password="mypassword",
+    password=SecretStr("mypassword"),
     cacert="/path/to/ca-cert.pem"
 )
 
@@ -151,55 +160,46 @@ result = client.execute_remote_playbook_yaml(
 # Check results
 if result and result.get("success"):
     print("Playbook executed successfully!")
-    print(f"Message: {result.get('message')}")
+    print(f"Success: {result.get('success', 'N/A')}")
+    print(f"Message: {result.get('message', 'No message.')}")
+    print(f" Attackmate Log:\n{result.get('attackmate_log', 'No log available.')}")
+    print(f"Output Log:\n{result.get('output_log', 'No output log available.')}")
+    print(f"Json Log:\n{result.get('json_log', 'No json log available.')}")
 
-    # Access final state variables
-    final_state = result.get("final_state", {})
-    variables = final_state.get("variables", {})
-    print(f"Final variables: {variables}")
+    final_state = result.get('final_state')
+    if final_state and final_state.get('variables'):
+        print('Final Variable Store State:')
+        print(yaml.safe_dump(final_state['variables'], indent=2, default_flow_style=False))
 else:
     print("Playbook execution failed!")
 ```
 
-#### Example 2: Error Handling
+expected output:
+```bash
+Playbook executed successfully!
+Success: True
+Message: Playbook execution finished.
+ Attackmate Log:
+2026-03-06 11:43:10 INFO - Delay before commands: 0 seconds
+2026-03-06 11:43:10 DEBUG - Template-Command: 'whoami'
+2026-03-06 11:43:10 INFO - Executing Shell-Command: 'whoami'
+2026-03-06 11:43:10 DEBUG - Running non interactive command
+2026-03-06 11:43:10 DEBUG - Closing popen process
+2026-03-06 11:43:10 DEBUG - loop_if does not match
+2026-03-06 11:43:10 DEBUG - loop_if_not does not match
+2026-03-06 11:43:10 WARNING - Cleaning up session stores
+2026-03-06 11:43:10 WARNING - Cleaning up session stores
+Output Log:
+2026-03-06 11:43:10 INFO - Command: whoami
+ubuntu
 
-```python
-from attackmate_client import RemoteAttackMateClient
-import logging
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-
-client = RemoteAttackMateClient(
-    server_url="https://attackmate.example.com:8445",
-    username="admin",
-    password="mypassword",
-    cacert="/path/to/self-signed-ca.crt"
-)
-
-try:
-    with open("playbook.yaml", "r") as f:
-        yaml_content = f.read()
-
-    result = client.execute_remote_playbook_yaml(yaml_content)
-
-    if not result:
-        print("ERROR: No result returned from server")
-        exit(1)
-
-    if not result.get("success"):
-        print(f"Playbook failed: {result.get('message')}")
-        exit(1)
-
-    print("Success!")
-
-except FileNotFoundError:
-    print("ERROR: Playbook file not found")
-    exit(1)
-except Exception as e:
-    print(f"Unexpected error: {e}")
-    exit(1)
+Json Log:
+{"start-datetime": "2026-03-06T11:43:10.835655", "type": "shell", "cmd": "whoami", "parameters": {"only_if": null, "error_if": null, "error_if_not": null, "loop_if": null, "loop_if_not": null, "loop_count": "3", "exit_on_error": true, "save": null, "background": false, "kill_on_exit": true, "metadata": null, "interactive": false, "creates_session": null, "session": null, "command_timeout": "10", "read": true, "command_shell": "/bin/sh", "bin": false}}
+Final Variable Store State:
+RESULT_RETURNCODE: '0'
+RESULT_STDOUT: 'ubuntu'
 ```
+
 
 ### Session Management
 
