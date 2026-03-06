@@ -28,6 +28,10 @@ def print_result(result_data: Optional[Dict[str, Any]], action: str) -> None:
     print(f'\n--- {action} Result ---')
     print(f"Success: {result_data.get('success', 'N/A')}")
     print(f"Message: {result_data.get('message', 'No message.')}")
+    print(f'\n--- {action} Logs ---')
+    print(f" Attackmate Log:\n{result_data.get('attackmate_log', 'No log available.')}")
+    print(f"Output Log:\n{result_data.get('output_log', 'No output log available.')}")
+    print(f"Json Log:\n{result_data.get('json_log', 'No json log available.')}")
 
     final_state = result_data.get('final_state')
     if final_state and final_state.get('variables'):

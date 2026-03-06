@@ -68,13 +68,31 @@ uv run attackmate-client playbook.yaml \
 ## Output Format
 
 ```
---- Playbook Execution (YAML: playbook.yaml) Result ---
+--- Playbook Execution (YAML: playbook.yml) Result ---
 Success: True
 Message: Playbook execution finished.
 
+--- Playbook Execution (YAML: playbook.yml) Logs ---
+ Attackmate Log:
+2026-03-06 10:55:03 INFO - Delay before commands: 0 seconds
+2026-03-06 10:55:03 DEBUG - Template-Command: 'whoami'
+2026-03-06 10:55:03 INFO - Executing Shell-Command: 'whoami'
+2026-03-06 10:55:03 DEBUG - Running non interactive command
+2026-03-06 10:55:03 DEBUG - Closing popen process
+2026-03-06 10:55:03 DEBUG - loop_if does not match
+2026-03-06 10:55:03 DEBUG - loop_if_not does not match
+2026-03-06 10:55:03 WARNING - Cleaning up session stores
+2026-03-06 10:55:03 WARNING - Cleaning up session stores
+Output Log:
+2026-03-06 10:55:03 INFO - Command: whoami
+ubuntu
+
+Json Log:
+{"start-datetime": "2026-03-06T10:55:03.759623", "type": "shell", "cmd": "whoami", "parameters": {"only_if": null, "error_if": null, "error_if_not": null, "loop_if": null, "loop_if_not": null, "loop_count": "3", "exit_on_error": true, "save": null, "background": false, "kill_on_exit": true, "metadata": null, "interactive": false, "creates_session": null, "session": null, "command_timeout": "10", "read": true, "command_shell": "/bin/sh", "bin": false}}
+
 --- Final Variable Store State ---
-variable1: value1
-variable2: value2
+RESULT_RETURNCODE: '0'
+RESULT_STDOUT: 'ubuntu'
 ```
 
 ## Next Steps
