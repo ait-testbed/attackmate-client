@@ -56,8 +56,6 @@
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#basic-example-with-self-signed-certificate">Basic Example with self-Signed Certificate</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#with-debug-mode">With Debug Mode</a>
-    </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#successful-output">Successful Output</a>
@@ -73,7 +71,7 @@
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../cli-overview/">Overview</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../cli-examples/">Examples</a>
+                  <li class="toctree-l1"><a class="" href="../cli-examples.md">Examples</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">API Reference</span></p>
@@ -128,21 +126,19 @@
   --password adminpass \
   --cacert /path/to/server-ca.crt
 </code></pre>
-<h3 id="with-debug-mode">With Debug Mode</h3>
-<pre><code class="language-bash">uv run attackmate-client playbook.yaml \
-  --server-url https://localhost:8445 \
-  --username admin \
-  --password adminpass \
-  --cacert /path/to/server-ca.crt \
-  --debug
+<p>minimal content for playbook.yml:</p>
+<pre><code class="language-yaml">commands:
+  - type: shell
+    cmd: whoami
 </code></pre>
 <h2 id="successful-output">Successful Output</h2>
 <pre><code>--- Playbook Execution (YAML: playbook.yaml) Result ---
 Success: True
-Message: Playbook executed successfully
+Message: Playbook execution finished
 
 --- Final Variable Store State ---
-target_ip: 192.168.1.100
+RESULT_RETURNCODE: '0'
+RESULT_STDOUT:  'ubuntu'
 </code></pre>
 <h2 id="common-issues">Common Issues</h2>
 <table>
@@ -174,7 +170,6 @@ target_ip: 192.168.1.100
 <h2 id="next-steps">Next Steps</h2>
 <ul>
 <li><a href="../cli-overview/">CLI Usage Guide</a> -  CLI options</li>
-<li><a href="../cli-examples/">CLI Examples</a> - practical examples</li>
 <li><a href="../client/">Python API</a> - Use in scripts</li>
 </ul>
               
