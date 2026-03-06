@@ -3,7 +3,8 @@
 This is a command-line client for interacting with the AttackMate API server for remotely executing playbooks.
 [Client Documentation](https://ait-testbed.github.io/attackmate-client/latest/) on github pages.
 
-**AttackMate** is a framework for automated security testing and attack simulation. For more information about the AttackMate framework, please visit the [main AttackMate repository](https://github.com/ait-testbed/attackmate) and the [ AttackMate api  server](https://github.com/ait-testbed/attackmate-api-server)
+**AttackMate** is a framework for automated security testing and attack simulation.
+For more information about the AttackMate framework, please visit the [AttackMate repository](https://github.com/ait-testbed/attackmate) and the [ AttackMate api server repository](https://github.com/ait-testbed/attackmate-api-server). Both can be installed with an ansible role:  [AttackMate ansible role] (https://github.com/ait-testbed/attackmate-ansible)
 
 ## Client Installation
 
@@ -20,7 +21,7 @@ With uv (recommended):
 uv sync --dev
 ```
 
-Using pip and virtualenv:
+Alternatively using pip and virtualenv:
 
 ```bash
 python -m venv venv
@@ -28,17 +29,17 @@ source venv/bin/activate
 pip install -e .
 ```
 
-## Usage
+## Use from the Command Line
 
 The main executable command is `attackmate-client`. All commands require authentication credentials (`--username` and `--password`).
 
-### Common Options
+### Options
 
 | Option        | Description                                                              |
 |---------------|--------------------------------------------------------------------------|
 | --server-url  | Base URL of the AttackMate API server (default: https://localhost:8445) |
-| --username    | API username for authentication. (Required)                              |
-| --password    | API password for authentication. (Required)                              |
+| --username    | API username for authentication. (required)                              |
+| --password    | API password for authentication. (required)                              |
 | --cacert      | Path to the server's CA certificate file if using self-signed SSL.       |
 | --debug       | Enable server debug logging for the playbook instance.                   |
 
@@ -47,7 +48,7 @@ The main executable command is `attackmate-client`. All commands require authent
 This command reads the YAML content from a local file and sends the full content directly to the AttackMate server's `/playbooks/execute/yaml` endpoint for execution.
 
 ```bash
-uv run attackmate-client /path/to/local_playbook.yaml --server-url <server-url> --username <user> --password <pass> --cacert </path/to/cert>
+uv run attackmate-client </path/to/local_playbook.yaml> --server-url <server-url> --username <user> --password <pass> --cacert </path/to/cert>
 ```
 
 **Example with real values:**
@@ -67,9 +68,7 @@ The core functionality of the client is exposed through the `RemoteAttackMateCli
 
 ### API Reference
 
-#### `RemoteAttackMateClient`
-
-The main client class for interacting with the AttackMate API.
+`RemoteAttackMateClient` is the main client class for interacting with the AttackMate API.
 
 **Constructor:**
 
@@ -90,9 +89,8 @@ RemoteAttackMateClient(
 - `cacert` (Optional[str]): Path to CA certificate file for SSL verification
 - `timeout` (Optional[float]): Request timeout in seconds (default: 60.0)
 
-#### Available Methods
-
-##### `execute_remote_playbook_yaml(playbook_yaml_content: str, debug: bool = False)`
+**METHODS:**
+####  `execute_remote_playbook_yaml(playbook_yaml_content: str, debug: bool = False)`
 
 Executes a playbook by sending its YAML content to the remote server.
 
@@ -111,28 +109,14 @@ Executes a playbook by sending its YAML content to the remote server.
   - `json_log` (str): Json log of remote instance
 - `None` on failure
 
-##### `execute_remote_command(command_pydantic_model, debug: bool = False)`
+#### Code Example 1: Basic Playbook Execution
 
-Executes a single command using a Pydantic model.
-
-**Parameters:**
-- `command_pydantic_model`: Pydantic model instance representing the command
-- `debug` (bool): Enable debug logging on the server (default: False)
-
-**Returns:**
-- `Dict[str, Any]` on success with execution results
-- `None` on failure
-
-### Code Examples
-
-#### Example 1: Basic Playbook Execution
 content of playbook.yml:
 ```yaml
 commands:
   - type: shell
     cmd: whoami
 ```
-
 
 ```python
 from attackmate_client import RemoteAttackMateClient
@@ -200,6 +184,82 @@ RESULT_RETURNCODE: '0'
 RESULT_STDOUT: 'ubuntu'
 ```
 
+#### `execute_remote_command(command_pydantic_model, debug: bool = False)`
+
+Executes a single  AttackMate command on the remote serve
+
+**Parameters:**
+- `command_pydantic_model`: A Pydantic model instance (e.g., `ShellCommand`) or a `RemoteCommand` representing the command. Must include a `type` field matching a valid remotely executable AttackMate command type.
+- `debug` (bool): Enable debug logging on the server (default: `False`)
+
+**Returns:**
+- `Dict[str, Any]` on success containing:
+  - `success` (bool): Whether execution succeeded
+  - `result` (dict): Contains `stdout`, `returncode`, and optionally `error_message`
+- `None` on failure
+
+**The dependency problem:** `command_pydantic_model` expects a `RemotelyExecutableCommand` instance — a Pydantic model from the `attackmate` package. However, since `attackmate` is not a dependency of this client, you have two options:
+
+**Option A — Pass a RemoteCommand from the attackmate client package (recommended for standalone use)**
+
+The client accepts a RemoteCommand, use this approach when you do not have `attackmate` installed:
+```python
+from attackmate_client import RemoteAttackMateClient, RemoteCommand
+
+client = RemoteAttackMateClient(...)
+
+command = RemoteCommand(type="shell", cmd="id")
+result = client.execute_remote_command(command, debug=True)
+```
+
+**Option B — Pass a Attackmate Command Pydantic model (for use within the AttackMate framework)**
+
+If you are writing scripts that already have `attackmate` installed (e.g., plugins or internal tooling), you can import and instantiate the model directly:
+```python
+from attackmate_client import RemoteAttackMateClient
+from attackmate.schemas.shell import ShellCommand
+
+client = RemoteAttackMateClient(...)
+
+command = ShellCommand(type="shell", cmd="whoami")
+result = client.execute_remote_command(command, debug=False)
+```
+
+#### Code Example 2: Basic Remote Command Execution
+```python
+from pydantic import SecretStr
+from attackmate_client import RemoteAttackMateClient, RemoteCommand
+
+client = RemoteAttackMateClient(
+    server_url="https://attackmate.example.com:8445",
+    username="admin",
+    password=SecretStr("mypassword"),
+    cacert="/path/to/ca-cert.pem"
+)
+
+# Pass command as a plain dict — no attackmate dependency needed
+command = RemoteCommand(type="shell", cmd="id")
+result = client.execute_remote_command(command, debug=True)
+
+if result:
+    cmd_result = result.get("result", {})
+    if cmd_result.get("success"):
+        print("Command succeeded!")
+        print(f"Output:\n{cmd_result.get('stdout', '')}")
+        print(f"Return code: {cmd_result.get('returncode')}")
+    else:
+        print(f"Command failed: {cmd_result.get('error_message', 'Unknown error')}")
+else:
+    print("No response received from server.")
+```
+
+**Expected output:**
+```
+Command succeeded!
+Output:
+uid=1000(ubuntu) gid=1000(ubuntu) groups=1000(ubuntu)
+Return code: 0
+```
 
 ### Session Management
 
