@@ -21,12 +21,11 @@ The `RemoteAttackMateClient` handles:
 ### `__init__()`
 
 ```python
-from pydantic import SecretStr
 
 RemoteAttackMateClient(
     server_url: str,
-    username: str = None,
-    password: SecretStr = None,
+    username: str,
+    password: str,
     cacert: Optional[str] = None,
     timeout: float = 60.0
 )
@@ -39,29 +38,22 @@ Creates a new client instance for communicating with an AttackMate server.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `server_url` | `str` | Yes | - | Base URL of the AttackMate API server (e.g., `"https://attackmate.example.com:8445"`) |
-| `username` | `str` | No | `None` | Username for authentication. Required if making authenticated requests. |
-| `password` | `SecretStr` | No | `None` | Password for authentication. Required if making authenticated requests. |
-| `cacert` | `Optional[str]` | No | `None` | Path to CA certificate file for SSL verification. Use for self-signed certificates. |
+| `username` | `str` | No | `None` | Username for authentication|
+| `password` | `SecretStr` | No | `None` | Password for authentication |
+| `cacert` | `Optional[str]` | No | `None` | Path to CA certificate file for SSL verification|
 | `timeout` | `float` | No | `60.0` | Request timeout in seconds for long-running playbooks. |
 
 #### Example
 
 ```python
-from pydantic import SecretStr
 client = RemoteAttackMateClient(
     server_url="https://attackmate.example.com:8445",
     username="admin",
-    password=SecretStr("secure_password"),
+    password="secure_password",
     cacert="/path/to/ca-cert.pem",
     timeout=120.0  # 2 minutes
 )
 ```
-
-#### Raises
-
-No exceptions are raised during initialization. Connection and authentication errors occur during method calls.
-
----
 
 ## Methods
 
@@ -93,9 +85,7 @@ def execute_remote_playbook_yaml(
       "message": str,            # Status or error message
       "final_state": {           # Final execution state
           "variables": dict,     # Variable store after execution
-          # ... other state fields
       },
-      "current_token": str       # Renewed authentication token (optional)
   }
   ```
 
@@ -184,11 +174,11 @@ Retrieves or creates an authentication token. Called automatically by request me
 
 ### `_login()` (Internal)
 
-Performs authentication and stores the token. Called automatically when needed.
+Performs authentication and stores the token.
 
 ### `_make_authenticated_request()` (Internal)
 
-Generic HTTP request handler. Manages token renewal and error handling.
+HTTP request handler. Manages token renewal and error handling.
 
 ---
 
@@ -224,23 +214,6 @@ The client handles errors gracefully without raising exceptions:
 | Invalid JSON response | Logs decode error | `None` |
 | SSL verification failure | Logs error | `None` |
 
-### Checking for Errors
-
-```python
-result = client.execute_remote_playbook_yaml(yaml_content)
-
-if result is None:
-    print("ERROR: Request failed - check logs")
-    exit(1)
-
-if not result.get("success"):
-    print(f"ERROR: Playbook failed - {result.get('message')}")
-    exit(1)
-
-print("Success!")
-```
-
----
 
 ## Logging
 
@@ -258,33 +231,6 @@ logging.basicConfig(
 # Now client operations will be logged
 client = RemoteAttackMateClient(...)
 ```
-
-### Log Levels
-
-- **DEBUG**: HTTP requests, token management, detailed flow
-- **INFO**: Authentication success, token renewal
-- **WARNING**: Token expiration, retryable issues
-- **ERROR**: Request failures, authentication errors
-
----
-
-## Type Hints
-
-The client is fully type-hinted for IDE support:
-
-```python
-from typing import Dict, Any, Optional
-
-result: Optional[Dict[str, Any]] = client.execute_remote_playbook_yaml(
-    playbook_yaml_content=yaml_str,
-    debug=False
-)
-
-if result:
-    success: bool = result.get("success", False)
-    message: str = result.get("message", "")
-```
-
 
 ## Complete Example
 
@@ -305,7 +251,7 @@ client = RemoteAttackMateClient(
 )
 
 # Read playbook
-with open("security_scan.yaml", "r") as f:
+with open("playbook.yaml", "r") as f:
     playbook_yaml = f.read()
 
 # Execute playbook
@@ -320,7 +266,7 @@ if not result:
     exit(1)
 
 if result.get("success"):
-    print(f"✓ Success: {result.get('message')}")
+    print(f"Success: {result.get('message')}")
 
     # Access final state
     final_state = result.get("final_state", {})
@@ -330,12 +276,6 @@ if result.get("success"):
     for key, value in variables.items():
         print(f"  {key}: {value}")
 else:
-    print(f"✗ Failed: {result.get('message')}")
+    print(f"Failed: {result.get('message')}")
     exit(1)
 ```
-
----
-
-## Next Steps
-
-- See [Code Examples](client-examples.md) for practical integration patterns
