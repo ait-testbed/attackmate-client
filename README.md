@@ -4,7 +4,7 @@ This is a command-line client for interacting with the AttackMate API server for
 [Client Documentation](https://ait-testbed.github.io/attackmate-client/latest/) on github pages.
 
 **AttackMate** is a framework for automated security testing and attack simulation.
-For more information about the AttackMate framework, please visit the [AttackMate repository](https://github.com/ait-testbed/attackmate) and the [ AttackMate api server repository](https://github.com/ait-testbed/attackmate-api-server). Both can be installed with an ansible role:  [AttackMate ansible role] (https://github.com/ait-testbed/attackmate-ansible)
+For more information about the AttackMate framework, please visit the [AttackMate repository](https://github.com/ait-testbed/attackmate) and the [ AttackMate api server repository](https://github.com/ait-testbed/attackmate-api-server). Both can be installed with an ansible role:  [AttackMate ansible role](https://github.com/ait-testbed/attackmate-ansible)
 
 ## Client Installation
 
@@ -237,7 +237,7 @@ client = RemoteAttackMateClient(
     cacert="/path/to/ca-cert.pem"
 )
 
-# Pass command as a plain dict — no attackmate dependency needed
+# Pass command as RemoteCommand
 command = RemoteCommand(type="shell", cmd="id")
 result = client.execute_remote_command(command, debug=True)
 
