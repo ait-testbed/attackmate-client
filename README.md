@@ -1,10 +1,11 @@
 # AttackMate Playbook CLI Client
 
 This is a command-line client for interacting with the AttackMate API server for remotely executing playbooks.
+[Client Documentation[(https://ait-testbed.github.io/attackmate-client/latest/) on github pages.
 
-**AttackMate** is a framework for automated security testing and attack simulation. For more information about the AttackMate framework, please visit the [main AttackMate repository](https://github.com/ait-testbed/attackmate).
+**AttackMate** is a framework for automated security testing and attack simulation. For more information about the AttackMate framework, please visit the [main AttackMate repository](https://github.com/ait-testbed/attackmate) and the [ AttackMate api  server](https://github.com/ait-testbed/attackmate-api-server)
 
-## Installation
+## Client Installation
 
 Clone the repository:
 
@@ -46,7 +47,7 @@ The main executable command is `attackmate-client`. All commands require authent
 This command reads the YAML content from a local file and sends the full content directly to the AttackMate server's `/playbooks/execute/yaml` endpoint for execution.
 
 ```bash
-uv run attackmate-client /path/to/local_playbook.yaml --username <user> --password <pass> --cacert /path/to/cert
+uv run attackmate-client /path/to/local_playbook.yaml --server-url <server-url> --username <user> --password <pass> --cacert </path/to/cert>
 ```
 
 **Example with real values:**
@@ -104,6 +105,10 @@ Executes a playbook by sending its YAML content to the remote server.
   - `success` (bool): Whether execution succeeded
   - `message` (str): Status message
   - `final_state` (dict): Final state including variables
+  - `instance_id` (str):  remote attackmate instance id
+  - `attackmate_log` (str): attackmate log of remote instance
+  - `output_log` (str): output log of remote instance
+  - `json_log` (str): Json log of remote instance
 - `None` on failure
 
 ##### `execute_remote_command(command_pydantic_model, debug: bool = False)`
@@ -196,42 +201,6 @@ except Exception as e:
     exit(1)
 ```
 
-#### Example 3: Multiple Playbook Executions
-
-```python
-from attackmate_client import RemoteAttackMateClient
-import os
-
-client = RemoteAttackMateClient(
-    server_url="https://attackmate.example.com:8445",
-    username="admin",
-    password="mypassword",
-    cacert="/path/to/self-signed-ca.crt"
-    timeout=120.0  # Longer timeout for complex playbooks
-)
-
-playbook_dir = "playbooks"
-results = {}
-
-# Execute all YAML files in a directory
-for filename in os.listdir(playbook_dir):
-    if filename.endswith(".yaml") or filename.endswith(".yml"):
-        filepath = os.path.join(playbook_dir, filename)
-
-        with open(filepath, "r") as f:
-            content = f.read()
-
-        print(f"Executing {filename}...")
-        result = client.execute_remote_playbook_yaml(content, debug=False)
-        results[filename] = result.get("success") if result else False
-
-# Summary
-print("\n=== Execution Summary ===")
-for playbook, success in results.items():
-    status = "✓ SUCCESS" if success else "✗ FAILED"
-    print(f"{status}: {playbook}")
-```
-
 ### Session Management
 
 The client handles authentication tokens automatically:
@@ -241,12 +210,15 @@ The client handles authentication tokens automatically:
 - Sessions are maintained across multiple API calls within the same process
 
 ## Documentation
-
 Full documentation for the AttackMate framework and API server is available at:
+
+#### Attackmate
 - **GitHub Pages:** [https://ait-testbed.github.io/attackmate](https://ait-testbed.github.io/attackmate)
 - **Main Repository:** [https://github.com/ait-testbed/attackmate](https://github.com/ait-testbed/attackmate)
 
-For client-specific issues and contributions, visit the [attackmate-client repository](https://github.com/ait-testbed/attackmate-client).
+#### Attackmate Api Server
+- **Main Repository:** [https://github.com/ait-testbed/attackmate-api-server](https://github.com/ait-testbed/attackmate-api-server)
+
 
 ## License
 
