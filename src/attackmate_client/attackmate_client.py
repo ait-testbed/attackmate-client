@@ -9,6 +9,12 @@ from pydantic import SecretStr
 
 logger = logging.getLogger('playbook')
 
+
+class ExecException(Exception):
+    """ Exception for all Executors
+    """
+
+
 # Global cache for active sessions (token storage), keyed by (server_url, username)
 _active_sessions: Dict[Tuple[str, str], str] = {}
 _sessions_lock = threading.Lock()
@@ -170,14 +176,13 @@ class RemoteAttackMateClient:
             return _dispatch_request(explicit_token=token).json()
 
         except httpx.HTTPStatusError as e:
-            logger.error(f'API Error ({method} {url}): {e.response.status_code}')
+            status = e.response.status_code
             try:
                 error_detail = e.response.json().get('detail', e.response.text)
-                logger.error(f'Server Detail: {error_detail}')
             except json.JSONDecodeError:
-                logger.error(f'Server Response Text: {e.response.text}')
+                error_detail = e.response.text
 
-            if e.response.status_code == 401:
+            if status == 401:
                 logger.warning(f'Token expired or invalid for {self.server_url}. Clearing session cache.')
                 with _sessions_lock:
                     _active_sessions.pop((self.server_url, self.username), None)
@@ -191,7 +196,10 @@ class RemoteAttackMateClient:
                             f'Retry after re-login failed ({method} {url}): {retry_e}',
                             exc_info=True,
                         )
-            return None
+                raise ExecException(f'Authentication failed for {self.server_url}.')
+
+            raise ExecException(f'API Error ({status}): {error_detail}')
+
         except httpx.RequestError as e:
             logger.error(f'Request Error ({method} {url}): {e}')
             return None
